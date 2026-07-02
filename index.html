@@ -95,6 +95,8 @@ label.f{font-weight:bold;font-size:.9em;margin-bottom:3px;display:block}
 .form-intro{background:var(--panel-2);border:1px solid var(--border);border-left:4px solid var(--brand);border-radius:9px;padding:12px 14px;margin-bottom:16px;font-size:.9em}
 .guia-list li,.guia-pasos li{margin-bottom:8px;line-height:1.5}
 .guia-pasos li{padding-left:4px}
+.ref-pag{display:inline-block;background:var(--panel-2);border:1px solid var(--brand);color:var(--brand-2);border-radius:6px;padding:1px 8px;font-size:.8em;white-space:nowrap;margin-left:4px;font-weight:bold}
+.ref-pag:hover{background:var(--brand);color:#fff}
 .form-control,.form-select{font-family:inherit;font-size:calc(1rem*var(--font-scale))}
 .req::after{content:" *";color:#dc2626}
 
@@ -570,7 +572,20 @@ const GUIAS = {
       'Asocia los procedimientos/instructivos que lo componen y formalízalo.'],
     consejos:['Un proceso agrupa varios procedimientos; se define por su alcance y aporte estratégico, no solo por el riesgo.',
       'Todo proceso debe tener un dueño e indicadores.'],
-    fuente:'CAIGG DT N°70/N°89 + RAA-03014 Ejército de Chile (SIPOC, mapa y flujo).'}
+    fuente:'CAIGG DT N°70/N°89 + RAA-03014 Ejército de Chile (SIPOC, mapa y flujo).',
+    refDoc:{
+      nombre:'RAA-03014 “Gestión de Procesos y Riesgos del Ejército” (Chile)',
+      archivo:'RAA-03014.pdf', offset:2,
+      pasos:[
+        {t:'Identificar los productos y servicios del área, a partir de su misión y tareas fundamentales.', art:'Art. 34', pag:30},
+        {t:'Identificar y clasificar los procesos: esenciales, de gestión y de sostenimiento.', art:'Art. 35', pag:30},
+        {t:'Elaborar el mapa de procesos (representación gráfica de todos los procesos).', art:'Art. 36', pag:31},
+        {t:'Levantar el proceso: definir etapas y objetivos, salidas y usuarios, actividades y participantes.', art:'Art. 37-39', pag:32},
+        {t:'Modelar / diagramar el flujo con notación BPMN (herramienta BIZAGI).', art:'Art. 40', pag:33},
+        {t:'Elaborar los procedimientos e instructivos que documentan en detalle el proceso.', art:'Art. 41-42', pag:34},
+        {t:'Formalizar mediante Resolución Exenta e integrar la matriz y el plan de tratamiento de riesgos.', art:'Art. 29', pag:28}
+      ]
+    }}
 };
 
 const DEFAULT_GATILLANTES = [
@@ -1027,6 +1042,10 @@ function renderGuia(nivelKey){
       <ol class="guia-list">${g.estructura.map(s=>`<li>${s}</li>`).join('')}</ol>` : '';
   const consejos = (g.consejos&&g.consejos.length) ? `<h5 style="color:var(--brand-2)" class="mt-3"><i class="bi bi-lightbulb"></i> Consejos</h5>
       <ul>${g.consejos.map(c=>`<li>${c}</li>`).join('')}</ul>` : '';
+  const refDoc = g.refDoc ? `<h5 style="color:var(--brand-2)" class="mt-3"><i class="bi bi-file-earmark-pdf"></i> Paso a paso oficial — ${g.refDoc.nombre}</h5>
+      <p class="sub" style="margin-bottom:8px">Referencia doctrinaria oficial. Pincha el número de página para abrir el documento justo en esa sección.</p>
+      <ol class="guia-pasos">${g.refDoc.pasos.map(s=>`<li>${s.t} <a href="${g.refDoc.archivo}#page=${s.pag+g.refDoc.offset}" target="_blank" class="ref-pag" title="Abrir en el documento">${s.art} · pág. ${s.pag} <i class="bi bi-box-arrow-up-right"></i></a></li>`).join('')}</ol>
+      <a class="btn btn-outline-brand btn-sm" href="${g.refDoc.archivo}" target="_blank"><i class="bi bi-file-earmark-pdf"></i> Abrir documento completo (RAA-03014)</a>` : '';
   const plantillaBtn = g.plantilla ? `<button class="btn btn-brand" onclick="descargarPlantilla('${nivelKey}')"><i class="bi bi-file-earmark-word"></i> Descargar plantilla en Word</button>` : '';
   document.getElementById('guiaContent').innerHTML = `
     <div class="result-hero" style="background:linear-gradient(135deg,${col},${col}cc);padding:22px">
@@ -1042,6 +1061,7 @@ function renderGuia(nivelKey){
       <h5 style="color:var(--brand-2)" class="mt-3"><i class="bi bi-list-ol"></i> Paso a paso para elaborarlo</h5>
       <ol class="guia-pasos">${g.pasos.map(p=>`<li>${p}</li>`).join('')}</ol>
       ${consejos}
+      ${refDoc}
       <div class="implica" style="margin-top:12px"><i class="bi bi-shield-check"></i> <b>Respaldo:</b> ${g.fuente}</div>
       <div class="navbtns" style="margin-top:16px">
         <button class="btn btn-outline-brand" onclick="volverDeGuia()"><i class="bi bi-arrow-left"></i> Volver</button>
