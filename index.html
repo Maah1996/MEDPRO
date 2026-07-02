@@ -1,0 +1,1093 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MEDPRO® — Sistema Experto de Nivel Documental</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+<style>
+:root{
+  --font-scale: 1;
+  --bg: #f4f6f9;
+  --panel: #ffffff;
+  --panel-2: #f8fafc;
+  --text: #1f2937;
+  --muted: #64748b;
+  --border: #e2e8f0;
+  --brand: #0d47a1;
+  --brand-2: #1565c0;
+  --accent: #0ea5e9;
+  --shadow: 0 2px 12px rgba(15,23,42,.08);
+  --radius: 14px;
+}
+[data-theme="dark"]{
+  --bg:#0f172a; --panel:#1e293b; --panel-2:#172033; --text:#e2e8f0;
+  --muted:#94a3b8; --border:#334155; --brand:#3b82f6; --brand-2:#60a5fa;
+  --shadow:0 2px 14px rgba(0,0,0,.35);
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  font-family:"Times New Roman", Times, Georgia, serif;
+  font-size:calc(1rem * var(--font-scale));
+  background:var(--bg); color:var(--text);
+  min-height:100vh; overflow-x:hidden;
+}
+a{color:var(--brand-2);text-decoration:none}
+.app{display:flex;min-height:100vh}
+
+/* Topbar */
+.topbar{
+  position:fixed;top:0;left:0;right:0;height:60px;z-index:1030;
+  background:var(--brand);color:#fff;display:flex;align-items:center;
+  gap:12px;padding:0 16px;box-shadow:var(--shadow);
+}
+.topbar .logo{display:flex;align-items:center;gap:10px;font-weight:bold;font-size:1.25em}
+.topbar .logo img{height:34px;border-radius:6px;background:#fff}
+.topbar .brandmark{width:38px;height:38px;border-radius:9px;background:#fff;color:var(--brand);
+  display:flex;align-items:center;justify-content:center;font-weight:bold;font-size:1.05em}
+.topbar .spacer{flex:1}
+.topbar button{background:rgba(255,255,255,.14);border:none;color:#fff;border-radius:8px;
+  padding:6px 10px;cursor:pointer;font-family:inherit;font-size:.85em}
+.topbar button:hover{background:rgba(255,255,255,.28)}
+.topbar .user{display:flex;align-items:center;gap:8px;font-size:.9em}
+.burger{display:none}
+
+/* Sidebar */
+.sidebar{
+  width:250px;flex:0 0 250px;background:var(--panel);border-right:1px solid var(--border);
+  padding:74px 0 20px;position:fixed;top:0;bottom:0;left:0;overflow-y:auto;z-index:1020;
+  transition:transform .25s ease;
+}
+.sidebar h6{color:var(--muted);font-size:.72em;text-transform:uppercase;letter-spacing:.08em;
+  padding:14px 20px 6px;margin:0}
+.nav-item{display:flex;align-items:center;gap:11px;padding:11px 20px;cursor:pointer;color:var(--text);
+  border-left:3px solid transparent;font-size:.98em}
+.nav-item i{font-size:1.15em;width:22px;text-align:center;color:var(--muted)}
+.nav-item:hover{background:var(--panel-2)}
+.nav-item.active{background:var(--panel-2);border-left-color:var(--brand);color:var(--brand-2);font-weight:bold}
+.nav-item.active i{color:var(--brand-2)}
+
+/* Main */
+.main{flex:1;margin-left:250px;padding:74px 26px 40px;min-width:0}
+.breadcrumb-bar{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:14px}
+.breadcrumb-bar .crumbs{color:var(--muted);font-size:.9em}
+.breadcrumb-bar .crumbs b{color:var(--text)}
+.progress-wrap{margin-bottom:20px}
+.progress{height:8px;background:var(--border);border-radius:20px;overflow:hidden}
+.progress-bar{background:linear-gradient(90deg,var(--brand),var(--accent));transition:width .4s}
+.steps{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
+.step{font-size:.78em;color:var(--muted);padding:2px 8px;border-radius:20px;background:var(--panel-2)}
+.step.done{color:#fff;background:var(--brand)}
+.step.current{color:#fff;background:var(--accent)}
+
+.card2{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);
+  box-shadow:var(--shadow);padding:22px;margin-bottom:18px}
+.card2 h2{margin:0 0 4px;font-size:1.5em;color:var(--brand-2)}
+.card2 .sub{color:var(--muted);margin-bottom:16px}
+.section{display:none}
+.section.active{display:block;animation:fade .3s}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+label.f{font-weight:bold;font-size:.9em;margin-bottom:3px;display:block}
+.form-control,.form-select{font-family:inherit;font-size:calc(1rem*var(--font-scale))}
+.req::after{content:" *";color:#dc2626}
+
+/* Criterio cards */
+.crit-card{background:var(--panel-2);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:14px}
+.crit-card h5{margin:0 0 3px;font-size:1.05em;display:flex;align-items:center;gap:8px}
+.crit-card .desc{color:var(--muted);font-size:.86em;margin-bottom:10px}
+.opt-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px}
+.opt{border:1px solid var(--border);border-radius:9px;padding:9px 10px;cursor:pointer;font-size:.86em;
+  background:var(--panel);transition:.15s;text-align:center}
+.opt:hover{border-color:var(--brand-2)}
+.opt.sel{background:var(--brand);color:#fff;border-color:var(--brand);font-weight:bold}
+
+/* Gatillante */
+.gat{display:flex;align-items:center;justify-content:space-between;gap:14px;background:var(--panel-2);
+  border:1px solid var(--border);border-radius:11px;padding:14px 16px;margin-bottom:12px}
+.gat .q{flex:1}
+.gat .q b{display:block}
+.gat .q small{color:var(--muted)}
+.toggle{display:flex;gap:6px}
+.toggle button{border:1px solid var(--border);background:var(--panel);color:var(--text);
+  padding:6px 16px;border-radius:8px;cursor:pointer;font-family:inherit}
+.toggle button.yes.on{background:#dc2626;color:#fff;border-color:#dc2626}
+.toggle button.no.on{background:#16a34a;color:#fff;border-color:#16a34a}
+
+/* Result */
+.result-hero{border-radius:16px;padding:26px;color:#fff;text-align:center;margin-bottom:18px}
+.result-hero .lvl{font-size:2.4em;font-weight:bold;margin:6px 0}
+.result-hero .ico{font-size:2.6em}
+.badge-soft{display:inline-block;background:rgba(255,255,255,.22);padding:4px 12px;border-radius:20px;font-size:.85em}
+.semaforo{display:flex;gap:8px;justify-content:center;margin-top:10px}
+.luz{width:20px;height:20px;border-radius:50%;background:rgba(255,255,255,.28)}
+.luz.on{box-shadow:0 0 12px 2px rgba(255,255,255,.6)}
+.factor{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--panel-2);
+  border-radius:10px;margin-bottom:8px;border:1px solid var(--border)}
+.factor .rank{width:26px;height:26px;border-radius:50%;background:var(--brand);color:#fff;
+  display:flex;align-items:center;justify-content:center;font-weight:bold;font-size:.85em;flex-shrink:0}
+.factor .bar{flex:1;height:7px;background:var(--border);border-radius:20px;overflow:hidden}
+.factor .bar span{display:block;height:100%;background:linear-gradient(90deg,var(--brand),var(--accent))}
+
+/* Dashboard */
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;margin-bottom:18px}
+.kpi{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:16px;box-shadow:var(--shadow)}
+.kpi .n{font-size:2em;font-weight:bold;color:var(--brand-2)}
+.kpi .l{color:var(--muted);font-size:.85em}
+.chart-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+@media(max-width:900px){.chart-grid{grid-template-columns:1fr}}
+
+table.tbl{width:100%;border-collapse:collapse;font-size:.9em}
+table.tbl th,table.tbl td{padding:9px 10px;border-bottom:1px solid var(--border);text-align:left}
+table.tbl th{color:var(--muted);font-size:.85em;text-transform:uppercase;letter-spacing:.04em}
+table.tbl tr:hover td{background:var(--panel-2)}
+.pill{padding:3px 9px;border-radius:20px;font-size:.8em;color:#fff;white-space:nowrap}
+
+.btn-brand{background:var(--brand);border-color:var(--brand);color:#fff;font-family:inherit}
+.btn-brand:hover{background:var(--brand-2);color:#fff}
+.btn-outline-brand{border:1px solid var(--brand);color:var(--brand-2);background:transparent;font-family:inherit}
+.btn-outline-brand:hover{background:var(--brand);color:#fff}
+.navbtns{display:flex;justify-content:space-between;gap:10px;margin-top:16px}
+.help-i{cursor:pointer;color:var(--accent)}
+.badge-crit{font-size:.72em;padding:2px 7px;border-radius:6px;color:#fff}
+
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:1010}
+.overlay.show{display:block}
+
+@media(max-width:860px){
+  .sidebar{transform:translateX(-100%)}
+  .sidebar.open{transform:translateX(0)}
+  .main{margin-left:0}
+  .burger{display:inline-flex}
+  .chart-grid{grid-template-columns:1fr}
+}
+.autosave{position:fixed;bottom:16px;right:16px;background:var(--brand);color:#fff;padding:8px 14px;
+  border-radius:20px;font-size:.82em;box-shadow:var(--shadow);opacity:0;transition:.3s;z-index:1040}
+.autosave.show{opacity:1}
+.cloud-badge{font-size:.72em;padding:2px 8px;border-radius:20px}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <button class="burger" onclick="toggleSidebar()"><i class="bi bi-list"></i></button>
+    <div class="logo"><span class="brandmark" id="brandMark">M</span><span id="brandName">MEDPRO®</span></div>
+    <div class="spacer"></div>
+    <span class="cloud-badge" id="cloudBadge" title="Estado de almacenamiento">…</span>
+    <button onclick="changeFont(-.1)" title="Reducir letra">A−</button>
+    <button onclick="changeFont(.1)" title="Aumentar letra">A+</button>
+    <button onclick="toggleTheme()" title="Tema claro/oscuro"><i class="bi bi-moon-stars" id="themeIcon"></i></button>
+    <div class="user"><i class="bi bi-person-circle"></i> <span id="userName">Evaluador</span></div>
+  </div>
+
+  <!-- SIDEBAR -->
+  <nav class="sidebar" id="sidebar">
+    <h6>Principal</h6>
+    <div class="nav-item active" data-nav="inicio" onclick="go('inicio')"><i class="bi bi-house-door"></i>Inicio</div>
+    <div class="nav-item" data-nav="metodologia" onclick="go('metodologia')"><i class="bi bi-diagram-3"></i>Metodología</div>
+    <h6>Evaluación</h6>
+    <div class="nav-item" data-nav="general" onclick="go('general')"><i class="bi bi-clipboard-data"></i>Información general</div>
+    <div class="nav-item" data-nav="gatillantes" onclick="go('gatillantes')"><i class="bi bi-exclamation-triangle"></i>Criterios gatillantes</div>
+    <div class="nav-item" data-nav="multicriterio" onclick="go('multicriterio')"><i class="bi bi-sliders"></i>Evaluación multicriterio</div>
+    <div class="nav-item" data-nav="resultado" onclick="go('resultado')"><i class="bi bi-award"></i>Resultado</div>
+    <h6>Gestión</h6>
+    <div class="nav-item" data-nav="historial" onclick="go('historial')"><i class="bi bi-clock-history"></i>Historial</div>
+    <div class="nav-item" data-nav="dashboard" onclick="go('dashboard')"><i class="bi bi-graph-up"></i>Dashboard</div>
+    <div class="nav-item" data-nav="admin" onclick="go('admin')"><i class="bi bi-gear"></i>Administración</div>
+    <div class="nav-item" data-nav="ayuda" onclick="go('ayuda')"><i class="bi bi-question-circle"></i>Ayuda</div>
+  </nav>
+
+  <div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
+
+  <!-- MAIN -->
+  <main class="main">
+    <div class="breadcrumb-bar">
+      <div class="crumbs">MEDPRO / <b id="crumb">Inicio</b></div>
+      <div id="evalContext" style="font-size:.85em;color:var(--muted)"></div>
+    </div>
+
+    <div class="progress-wrap" id="progressWrap" style="display:none">
+      <div class="progress"><div class="progress-bar" id="progBar" style="width:0%"></div></div>
+      <div class="steps" id="steps"></div>
+    </div>
+
+    <!-- ===== INICIO ===== -->
+    <section class="section active" id="s-inicio">
+      <div class="card2" style="text-align:center;padding:44px 22px">
+        <div style="font-size:3em" class="brandmark" ><span class="brandmark" style="width:74px;height:74px;font-size:1.6em;margin:0 auto">M</span></div>
+        <h2 style="margin-top:14px;font-size:2em">MEDPRO®</h2>
+        <p class="sub" style="max-width:640px;margin:6px auto 0">Sistema experto para determinar, de forma objetiva, repetible y auditable, el <b>nivel de documentación</b> que requiere una actividad: Buena práctica, Checklist, Cartilla, Instructivo, Procedimiento o Proceso.</p>
+        <div style="margin:18px 0;color:var(--muted);font-size:.9em">Fundamentado en ISO 9000 · 9001 · 31000 · 45001 · 14001</div>
+        <div class="d-flex gap-2 justify-content-center flex-wrap">
+          <button class="btn btn-brand btn-lg" onclick="nuevaEvaluacion()"><i class="bi bi-play-circle"></i> Comenzar evaluación</button>
+          <button class="btn btn-outline-brand btn-lg" onclick="go('metodologia')"><i class="bi bi-book"></i> Manual / Metodología</button>
+          <button class="btn btn-outline-brand btn-lg" onclick="acercaDe()"><i class="bi bi-info-circle"></i> Acerca de</button>
+        </div>
+      </div>
+      <div class="kpi-grid" id="inicioKpis"></div>
+    </section>
+
+    <!-- ===== METODOLOGIA ===== -->
+    <section class="section" id="s-metodologia">
+      <div class="card2">
+        <h2>Metodología MEDPRO</h2>
+        <p class="sub">Cómo el sistema experto decide el nivel documental.</p>
+        <h5 class="text-brand" style="color:var(--brand-2)">Objetivo</h5>
+        <p>Crear una metodología estándar, objetiva, repetible y auditable. MEDPRO <b>no reemplaza el criterio profesional</b>: lo orienta mediante reglas configurables, criterios ponderados y evidencia trazable.</p>
+        <h5 style="color:var(--brand-2)">Flujo de evaluación</h5>
+        <div class="d-flex flex-wrap gap-2 align-items-center my-2" style="font-size:.9em">
+          <span class="step done">1 · Información general</span>→
+          <span class="step done">2 · Criterios gatillantes</span>→
+          <span class="step done">3 · Evaluación multicriterio</span>→
+          <span class="step done">4 · Índice MEDPRO</span>→
+          <span class="step done">5 · Justificación</span>→
+          <span class="step done">6 · Informe</span>
+        </div>
+        <h5 style="color:var(--brand-2)">Niveles documentales</h5>
+        <div class="row g-2" id="nivelesGrid"></div>
+        <h5 style="color:var(--brand-2)" class="mt-3">Normativa base</h5>
+        <ul id="normativaList"></ul>
+        <div class="navbtns"><span></span><button class="btn btn-brand" onclick="nuevaEvaluacion()">Comenzar <i class="bi bi-arrow-right"></i></button></div>
+      </div>
+    </section>
+
+    <!-- ===== INFO GENERAL ===== -->
+    <section class="section" id="s-general">
+      <div class="card2">
+        <h2>Información general</h2>
+        <p class="sub">Identifica la actividad a evaluar. Los campos con * son obligatorios.</p>
+        <div class="row g-3">
+          <div class="col-md-6"><label class="f req">Empresa</label><input class="form-control" id="g_empresa"></div>
+          <div class="col-md-6"><label class="f req">Área</label><input class="form-control" id="g_area"></div>
+          <div class="col-md-6"><label class="f req">Proceso</label><input class="form-control" id="g_proceso"></div>
+          <div class="col-md-6"><label class="f req">Actividad</label><input class="form-control" id="g_actividad"></div>
+          <div class="col-md-6"><label class="f req">Responsable</label><input class="form-control" id="g_responsable"></div>
+          <div class="col-md-6"><label class="f req">Evaluador</label><input class="form-control" id="g_evaluador"></div>
+          <div class="col-md-4"><label class="f req">Fecha</label><input type="date" class="form-control" id="g_fecha"></div>
+          <div class="col-md-4"><label class="f">Cargo</label><input class="form-control" id="g_cargo"></div>
+          <div class="col-md-4"><label class="f">Código interno</label><input class="form-control" id="g_codigo"></div>
+          <div class="col-12"><label class="f">Observaciones</label><textarea class="form-control" id="g_obs" rows="2"></textarea></div>
+        </div>
+        <div class="navbtns">
+          <button class="btn btn-outline-brand" onclick="go('inicio')"><i class="bi bi-arrow-left"></i> Anterior</button>
+          <button class="btn btn-brand" onclick="validarGeneral()">Siguiente <i class="bi bi-arrow-right"></i></button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== GATILLANTES ===== -->
+    <section class="section" id="s-gatillantes">
+      <div class="card2">
+        <h2>Criterios gatillantes</h2>
+        <p class="sub">Preguntas clave Sí/No. Si alguna es "Sí", la actividad activa una condición crítica y requerirá al menos un <b>Procedimiento</b>.</p>
+        <div id="gatList"></div>
+        <div class="navbtns">
+          <button class="btn btn-outline-brand" onclick="go('general')"><i class="bi bi-arrow-left"></i> Anterior</button>
+          <button class="btn btn-brand" onclick="validarGatillantes()">Siguiente <i class="bi bi-arrow-right"></i></button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== MULTICRITERIO ===== -->
+    <section class="section" id="s-multicriterio">
+      <div class="card2">
+        <h2>Evaluación multicriterio</h2>
+        <p class="sub">Selecciona la descripción que mejor represente cada criterio. El sistema calcula internamente el resultado; tú no ves puntajes.</p>
+        <div id="critList"></div>
+        <div class="navbtns">
+          <button class="btn btn-outline-brand" onclick="go('gatillantes')"><i class="bi bi-arrow-left"></i> Anterior</button>
+          <button class="btn btn-brand" onclick="calcularResultado()">Calcular resultado <i class="bi bi-cpu"></i></button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== RESULTADO ===== -->
+    <section class="section" id="s-resultado">
+      <div id="resultContent"></div>
+    </section>
+
+    <!-- ===== HISTORIAL ===== -->
+    <section class="section" id="s-historial">
+      <div class="card2">
+        <h2>Historial de evaluaciones</h2>
+        <p class="sub">Consulta, filtra, reabre, duplica y exporta evaluaciones anteriores.</p>
+        <div class="row g-2 mb-3">
+          <div class="col-md-3"><input class="form-control form-control-sm" id="h_empresa" placeholder="Empresa" oninput="renderHistorial()"></div>
+          <div class="col-md-3"><input class="form-control form-control-sm" id="h_area" placeholder="Área" oninput="renderHistorial()"></div>
+          <div class="col-md-3"><select class="form-select form-select-sm" id="h_result" onchange="renderHistorial()"><option value="">Todos los resultados</option></select></div>
+          <div class="col-md-3"><input class="form-control form-control-sm" id="h_evaluador" placeholder="Evaluador" oninput="renderHistorial()"></div>
+        </div>
+        <div style="overflow-x:auto"><table class="tbl" id="histTable"></table></div>
+      </div>
+    </section>
+
+    <!-- ===== DASHBOARD ===== -->
+    <section class="section" id="s-dashboard">
+      <div class="card2">
+        <h2>Dashboard</h2>
+        <p class="sub">Indicadores y tendencias de las evaluaciones registradas.</p>
+        <div class="kpi-grid" id="dashKpis"></div>
+        <div class="chart-grid">
+          <div><h6 style="color:var(--muted)">Distribución por nivel documental</h6><canvas id="chartDist" height="220"></canvas></div>
+          <div><h6 style="color:var(--muted)">Evaluaciones por mes</h6><canvas id="chartTrend" height="220"></canvas></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== ADMIN ===== -->
+    <section class="section" id="s-admin">
+      <div class="card2">
+        <h2>Administración</h2>
+        <p class="sub">Configura el sistema <b>sin tocar el código</b>. Los cambios se guardan y aplican de inmediato.</p>
+        <ul class="nav nav-pills mb-3" id="adminTabs">
+          <li class="nav-item"><button class="nav-link active" onclick="adminTab('org',event)">Organización</button></li>
+          <li class="nav-item"><button class="nav-link" onclick="adminTab('crit',event)">Criterios y pesos</button></li>
+          <li class="nav-item"><button class="nav-link" onclick="adminTab('umbr',event)">Umbrales y colores</button></li>
+          <li class="nav-item"><button class="nav-link" onclick="adminTab('sys',event)">Sistema</button></li>
+        </ul>
+        <div id="admin-org" class="admin-pane"></div>
+        <div id="admin-crit" class="admin-pane" style="display:none"></div>
+        <div id="admin-umbr" class="admin-pane" style="display:none"></div>
+        <div id="admin-sys" class="admin-pane" style="display:none"></div>
+      </div>
+    </section>
+
+    <!-- ===== AYUDA ===== -->
+    <section class="section" id="s-ayuda">
+      <div class="card2">
+        <h2>Ayuda</h2>
+        <p class="sub">Glosario, preguntas frecuentes y ejemplos.</p>
+        <h5 style="color:var(--brand-2)">Glosario</h5>
+        <div id="glosario"></div>
+        <h5 style="color:var(--brand-2)" class="mt-3">Preguntas frecuentes</h5>
+        <div class="accordion" id="faq"></div>
+        <h5 style="color:var(--brand-2)" class="mt-3">Casos de referencia</h5>
+        <ul>
+          <li>Actividad simple y sin riesgos → <b>Sin documentación</b> o Buena práctica.</li>
+          <li>Actividad repetitiva y estandarizable → <b>Checklist</b>.</li>
+          <li>Riesgo medio con varias etapas → <b>Instructivo</b>.</li>
+          <li>Riesgo alto o requisito legal → <b>Procedimiento</b>.</li>
+          <li>Alta criticidad y continuidad operacional → <b>Proceso</b>.</li>
+        </ul>
+        <p class="text-muted" style="font-size:.85em">Contacto administrador: <span id="contactAdmin">marcoaraya1973@gmail.com</span></p>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<div class="autosave" id="autosave"><i class="bi bi-cloud-check"></i> Guardado</div>
+
+<!-- Libraries -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<!-- Firebase (compat) -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+
+<script>
+/* =========================================================================
+   MEDPRO® — Sistema Experto de Nivel Documental
+   Arquitectura: Interfaz (UI) · Lógica (App) · Motor (MEDPRO) · Datos (Store)
+   ========================================================================= */
+
+/* -------------------- 0) FIREBASE CONFIG -------------------------------- */
+/* Pega aquí la configuración de tu proyecto Firebase (Firestore).
+   Si se deja vacío, MEDPRO funciona 100% con almacenamiento local (localStorage).
+   Consíguela en: consola Firebase → Configuración del proyecto → Tus apps → SDK. */
+const firebaseConfig = {
+  apiKey: "AIzaSyAqmY93K-gbn6-DNonlPawBstUfcWGbd6s",
+  authDomain: "medpro-ab1b2.firebaseapp.com",
+  projectId: "medpro-ab1b2",
+  storageBucket: "medpro-ab1b2.firebasestorage.app",
+  messagingSenderId: "348609613966",
+  appId: "1:348609613966:web:ce09b8c78749054cc739df"
+};
+
+/* -------------------- 1) DATOS POR DEFECTO (CONFIG) --------------------- */
+const NIVELES = [
+  {key:'sin',        nombre:'Sin documentación', color:'#94a3b8', icon:'bi-dash-circle',    desc:'La actividad es simple, sin riesgos ni requisitos; no requiere documento formal.'},
+  {key:'buena',      nombre:'Buena práctica',    color:'#22c55e', icon:'bi-hand-thumbs-up', desc:'Recomendación general para ejecutar bien la actividad, sin formalidad estricta.'},
+  {key:'checklist',  nombre:'Checklist',         color:'#84cc16', icon:'bi-check2-square',  desc:'Lista de verificación para asegurar que no se omitan pasos clave.'},
+  {key:'cartilla',   nombre:'Cartilla',          color:'#eab308', icon:'bi-card-text',      desc:'Guía breve y visual con los puntos esenciales de la actividad.'},
+  {key:'instructivo',nombre:'Instructivo',       color:'#f59e0b', icon:'bi-list-ol',        desc:'Instrucciones paso a paso para una tarea con cierta complejidad o riesgo medio.'},
+  {key:'procedimiento',nombre:'Procedimiento',   color:'#f97316', icon:'bi-file-earmark-ruled', desc:'Documento formal con responsables, controles y registros para actividad crítica o legal.'},
+  {key:'proceso',    nombre:'Proceso',           color:'#dc2626', icon:'bi-diagram-3-fill', desc:'Modelado completo (entradas, salidas, indicadores) para actividades de alta criticidad y continuidad.'}
+];
+const NIVEL_ORDER = NIVELES.map(n=>n.key);
+
+const DEFAULT_GATILLANTES = [
+  {id:'g1', texto:'¿Existe obligación legal o reglamentaria?', ayuda:'Normas, leyes, reglamentos o exigencias de un organismo fiscalizador que obliguen a documentar.'},
+  {id:'g2', texto:'¿La actividad puede provocar lesiones graves o fatales?', ayuda:'Potencial de accidentes serios a las personas (caídas de altura, energías peligrosas, etc.).'},
+  {id:'g3', texto:'¿Puede generar impacto ambiental significativo?', ayuda:'Derrames, emisiones, residuos peligrosos o afectación a recursos naturales.'},
+  {id:'g4', texto:'¿Puede detener la continuidad operacional?', ayuda:'Su falla interrumpe la operación, la producción o la entrega del servicio.'},
+  {id:'g5', texto:'¿Puede ocasionar pérdidas económicas críticas?', ayuda:'Errores que generan costos elevados, multas o pérdida de activos importantes.'},
+  {id:'g6', texto:'¿Está asociada a emergencias o respuesta ante incidentes?', ayuda:'Actividad que forma parte de planes de emergencia o respuesta a incidentes.'}
+];
+
+/* 15 criterios ponderados. Cada criterio: 5 opciones (valor interno 1..5, oculto al usuario). */
+function esc5(a,b,c,d,e){return [
+  {label:a,valor:0},{label:b,valor:1},{label:c,valor:2},{label:d,valor:3},{label:e,valor:4}];}
+const DEFAULT_CRITERIOS = [
+  {id:'c1', nombre:'Criticidad', descripcion:'Consecuencia de ejecutar mal la actividad', peso:10, activo:true,
+    opciones:esc5('Sin consecuencia','Consecuencia leve','Consecuencia moderada','Consecuencia grave','Consecuencia crítica')},
+  {id:'c2', nombre:'Riesgo', descripcion:'Nivel de peligro para las personas', peso:10, activo:true,
+    opciones:esc5('Sin riesgo','Riesgo bajo','Riesgo medio','Riesgo alto','Riesgo muy alto/fatal')},
+  {id:'c3', nombre:'Cumplimiento legal', descripcion:'Normas aplicables', peso:9, activo:true,
+    opciones:esc5('No aplica','Recomendación','Norma interna','Norma externa','Exigencia legal obligatoria')},
+  {id:'c4', nombre:'Complejidad', descripcion:'Cantidad de pasos y decisiones', peso:7, activo:true,
+    opciones:esc5('1 paso','Pocos pasos','Varios pasos','Muchos pasos','Muy compleja/multietapa')},
+  {id:'c5', nombre:'Frecuencia', descripcion:'Periodicidad de ejecución', peso:5, activo:true,
+    opciones:esc5('Excepcional','Anual','Mensual','Semanal','Diaria/permanente')},
+  {id:'c6', nombre:'Personas involucradas', descripcion:'Cantidad de participantes', peso:5, activo:true,
+    opciones:esc5('1 persona','2-3 personas','Un equipo','Varias áreas','Toda la organización')},
+  {id:'c7', nombre:'Variabilidad', descripcion:'Grado de estandarización', peso:6, activo:true,
+    opciones:esc5('Totalmente estándar','Casi estándar','Variable','Muy variable','Sin estándar')},
+  {id:'c8', nombre:'Impacto económico', descripcion:'Costo del error', peso:8, activo:true,
+    opciones:esc5('Insignificante','Bajo','Moderado','Alto','Crítico')},
+  {id:'c9', nombre:'Impacto al cliente', descripcion:'Afectación del servicio', peso:7, activo:true,
+    opciones:esc5('Ninguno','Bajo','Moderado','Alto','Severo')},
+  {id:'c10',nombre:'Experiencia requerida', descripcion:'Nivel técnico necesario', peso:6, activo:true,
+    opciones:esc5('Ninguna','Básica','Intermedia','Avanzada','Especialista/certificado')},
+  {id:'c11',nombre:'Historial', descripcion:'Incidentes o reclamos previos', peso:6, activo:true,
+    opciones:esc5('Sin antecedentes','Aislados','Ocasionales','Frecuentes','Recurrentes/graves')},
+  {id:'c12',nombre:'Trazabilidad', descripcion:'Necesidad de evidencia', peso:7, activo:true,
+    opciones:esc5('No requiere','Deseable','Recomendada','Necesaria','Obligatoria')},
+  {id:'c13',nombre:'Continuidad operacional', descripcion:'Importancia para el negocio', peso:9, activo:true,
+    opciones:esc5('Irrelevante','Baja','Media','Alta','Vital/estratégica')},
+  {id:'c14',nombre:'Impacto ambiental', descripcion:'Consecuencia ambiental', peso:7, activo:true,
+    opciones:esc5('Ninguno','Menor','Moderado','Significativo','Grave')},
+  {id:'c15',nombre:'Reputación', descripcion:'Imagen institucional', peso:6, activo:true,
+    opciones:esc5('Sin impacto','Bajo','Moderado','Alto','Crítico')}
+];
+
+const DEFAULT_UMBRALES = [
+  {key:'sin',         min:0,  max:16},
+  {key:'buena',       min:16, max:30},
+  {key:'checklist',   min:30, max:44},
+  {key:'cartilla',    min:44, max:57},
+  {key:'instructivo', min:57, max:71},
+  {key:'procedimiento',min:71,max:86},
+  {key:'proceso',     min:86, max:101}
+];
+
+const DEFAULT_NORMATIVA = [
+  'ISO 9000 — Define proceso, procedimiento y conceptos.',
+  'ISO 9001 — Enfoque basado en procesos y pensamiento basado en riesgos.',
+  'ISO 31000 — Principios para la gestión del riesgo.',
+  'ISO 45001 — Control de actividades críticas para proteger a las personas.',
+  'ISO 14001 — Control de actividades con impactos ambientales.'
+];
+
+function defaultConfig(){
+  return {
+    org:{ nombre:'MEDPRO®', sigla:'M', logo:'', contacto:'marcoaraya1973@gmail.com' },
+    gatillantes: structuredClone(DEFAULT_GATILLANTES),
+    criterios: structuredClone(DEFAULT_CRITERIOS),
+    umbrales: structuredClone(DEFAULT_UMBRALES),
+    normativa: structuredClone(DEFAULT_NORMATIVA),
+    colores: NIVELES.reduce((o,n)=>{o[n.key]=n.color;return o;},{})
+  };
+}
+
+/* -------------------- 2) MOTOR MEDPRO (desacoplado) -------------------- */
+/* Recibe respuestas + config, devuelve recomendación con justificación.
+   No contiene código visual. */
+const MedproEngine = (function(){
+  function nivelPorIndice(indice, umbrales){
+    for(const u of umbrales){ if(indice>=u.min && indice<u.max) return u.key; }
+    return indice>=100 ? 'proceso' : 'sin';
+  }
+  function evaluar(respuestas, gatResp, config){
+    const crit = config.criterios.filter(c=>c.activo);
+    let num=0, den=0, aportes=[];
+    crit.forEach(c=>{
+      const v = respuestas[c.id];
+      if(v==null) return;
+      num += c.peso * v;
+      den += c.peso * 4;
+      aportes.push({id:c.id, nombre:c.nombre, valor:v, peso:c.peso, aporte:c.peso*v});
+    });
+    const indice = den>0 ? Math.round((num/den)*100) : 0;
+
+    // Gatillantes
+    const activos = config.gatillantes.filter(g=>gatResp[g.id]===true);
+    let nivel = nivelPorIndice(indice, config.umbrales);
+    let elevado = false;
+    if(activos.length>0){
+      if(NIVEL_ORDER.indexOf(nivel) < NIVEL_ORDER.indexOf('procedimiento')){
+        nivel='procedimiento'; elevado=true;
+      }
+      if(activos.length>=2 || indice>=86){ nivel='proceso'; elevado=true; }
+    }
+
+    // Top 3 factores influyentes (por aporte peso*valor)
+    aportes.sort((a,b)=> b.aporte - a.aporte);
+    const top3 = aportes.slice(0,3);
+
+    // Criticidad / semáforo
+    let semaforo;
+    if(nivel==='proceso' || nivel==='procedimiento' || indice>=71) semaforo='rojo';
+    else if(indice>=44 || activos.length>0) semaforo='amarillo';
+    else semaforo='verde';
+
+    return { indice, nivel, elevado, gatillantesActivos:activos, top3, aportes, semaforo };
+  }
+  return { evaluar, nivelPorIndice };
+})();
+
+/* -------------------- 3) CAPA DE DATOS (Store) ------------------------- */
+const Store = (function(){
+  let db=null, useCloud=false;
+  const LKEY_EVAL='medpro_evaluaciones', LKEY_CFG='medpro_config';
+
+  function init(){
+    const hasCfg = firebaseConfig.projectId && firebaseConfig.apiKey;
+    if(hasCfg && window.firebase){
+      try{
+        firebase.initializeApp(firebaseConfig);
+        db = firebase.firestore();
+        useCloud=true;
+      }catch(e){ console.warn('Firebase no inició, usando local:',e); useCloud=false; }
+    }
+    setCloudBadge();
+  }
+  function setCloudBadge(){
+    const b=document.getElementById('cloudBadge');
+    if(useCloud){ b.textContent='☁ Firebase'; b.style.background='rgba(255,255,255,.22)'; }
+    else { b.textContent='💾 Local'; b.style.background='rgba(255,255,255,.22)'; }
+  }
+  // Config
+  async function getConfig(){
+    if(useCloud){
+      try{ const d=await db.collection('medpro_config').doc('main').get();
+        if(d.exists) return {...defaultConfig(), ...d.data()}; }catch(e){console.warn(e);}
+    }
+    const raw=localStorage.getItem(LKEY_CFG);
+    return raw ? {...defaultConfig(), ...JSON.parse(raw)} : defaultConfig();
+  }
+  async function saveConfig(cfg){
+    localStorage.setItem(LKEY_CFG, JSON.stringify(cfg));
+    if(useCloud){ try{ await db.collection('medpro_config').doc('main').set(cfg); }catch(e){console.warn(e);} }
+  }
+  // Evaluaciones
+  async function getEvaluaciones(){
+    if(useCloud){
+      try{ const s=await db.collection('medpro_evaluaciones').orderBy('creado','desc').get();
+        return s.docs.map(d=>({id:d.id,...d.data()})); }catch(e){console.warn(e);}
+    }
+    const raw=localStorage.getItem(LKEY_EVAL);
+    return raw ? JSON.parse(raw) : [];
+  }
+  async function saveEvaluacion(ev){
+    // local
+    const raw=localStorage.getItem(LKEY_EVAL);
+    let arr = raw ? JSON.parse(raw) : [];
+    const idx = arr.findIndex(x=>x.id===ev.id);
+    if(idx>=0) arr[idx]=ev; else arr.unshift(ev);
+    localStorage.setItem(LKEY_EVAL, JSON.stringify(arr));
+    if(useCloud){ try{ await db.collection('medpro_evaluaciones').doc(ev.id).set(ev); }catch(e){console.warn(e);} }
+  }
+  return { init, getConfig, saveConfig, getEvaluaciones, saveEvaluacion, isCloud:()=>useCloud };
+})();
+
+/* -------------------- 4) ESTADO / LÓGICA DE APLICACIÓN ----------------- */
+let CONFIG = defaultConfig();
+let currentEval = null;           // evaluación en curso
+const FLOW = ['general','gatillantes','multicriterio','resultado'];
+const STEP_NAMES = {general:'Información',gatillantes:'Gatillantes',multicriterio:'Multicriterio',resultado:'Resultado'};
+const CRUMBS = {inicio:'Inicio',metodologia:'Metodología',general:'Información general',gatillantes:'Criterios gatillantes',
+  multicriterio:'Evaluación multicriterio',resultado:'Resultado',historial:'Historial',dashboard:'Dashboard',admin:'Administración',ayuda:'Ayuda'};
+
+function nivelInfo(key){ return NIVELES.find(n=>n.key===key); }
+function nivelColor(key){ return (CONFIG.colores&&CONFIG.colores[key]) || nivelInfo(key).color; }
+
+/* ---- Navegación ---- */
+function go(view){
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  const sec=document.getElementById('s-'+view); if(sec)sec.classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.toggle('active', n.dataset.nav===view));
+  document.getElementById('crumb').textContent = CRUMBS[view]||view;
+  const isFlow = FLOW.includes(view);
+  document.getElementById('progressWrap').style.display = isFlow ? 'block':'none';
+  if(isFlow) updateProgress(view);
+  if(view==='historial') renderHistorial();
+  if(view==='dashboard') renderDashboard();
+  if(view==='admin') renderAdmin();
+  if(view==='inicio') renderInicioKpis();
+  if(window.innerWidth<=860) closeSidebar();
+  window.scrollTo(0,0);
+}
+function updateProgress(view){
+  const i=FLOW.indexOf(view);
+  document.getElementById('progBar').style.width = ((i+1)/FLOW.length*100)+'%';
+  document.getElementById('steps').innerHTML = FLOW.map((f,k)=>{
+    const cls = k<i?'done':(k===i?'current':'');
+    return `<span class="step ${cls}">${k+1} · ${STEP_NAMES[f]}</span>`;
+  }).join('');
+  document.getElementById('evalContext').textContent = currentEval && currentEval.general.actividad
+     ? '📋 '+currentEval.general.actividad : '';
+}
+
+/* ---- Sidebar mobile ---- */
+function toggleSidebar(){ document.getElementById('sidebar').classList.toggle('open'); document.getElementById('overlay').classList.toggle('show'); }
+function closeSidebar(){ document.getElementById('sidebar').classList.remove('open'); document.getElementById('overlay').classList.remove('show'); }
+
+/* ---- Tema / Fuente ---- */
+function toggleTheme(){
+  const dark = document.documentElement.getAttribute('data-theme')==='dark';
+  document.documentElement.setAttribute('data-theme', dark?'light':'dark');
+  document.getElementById('themeIcon').className = dark?'bi bi-moon-stars':'bi bi-sun';
+  localStorage.setItem('medpro_theme', dark?'light':'dark');
+}
+function changeFont(delta){
+  let s=parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--font-scale'))||1;
+  s=Math.min(1.5,Math.max(.8, s+delta));
+  document.documentElement.style.setProperty('--font-scale', s.toFixed(2));
+  localStorage.setItem('medpro_font', s.toFixed(2));
+}
+
+/* ---- Nueva evaluación ---- */
+function nuevaEvaluacion(){
+  currentEval = {
+    id: 'EV-'+Date.now(),
+    general:{empresa:'',area:'',proceso:'',actividad:'',responsable:'',evaluador:'',fecha:new Date().toISOString().slice(0,10),cargo:'',codigo:'',obs:''},
+    gatillantes:{}, respuestas:{}, resultado:null,
+    estado:'en_curso', creado:new Date().toISOString()
+  };
+  document.getElementById('g_fecha').value = currentEval.general.fecha;
+  ['empresa','area','proceso','actividad','responsable','evaluador','cargo','codigo','obs'].forEach(k=>{
+    const el=document.getElementById('g_'+k); if(el)el.value='';
+  });
+  go('general');
+}
+
+/* ---- Paso 1: Info general ---- */
+function validarGeneral(){
+  const g = currentEval.general;
+  const map={empresa:'g_empresa',area:'g_area',proceso:'g_proceso',actividad:'g_actividad',responsable:'g_responsable',evaluador:'g_evaluador',fecha:'g_fecha',cargo:'g_cargo',codigo:'g_codigo',obs:'g_obs'};
+  Object.entries(map).forEach(([k,id])=>{ g[k]=document.getElementById(id).value.trim(); });
+  const req=['empresa','area','proceso','actividad','responsable','evaluador','fecha'];
+  const falta=req.filter(k=>!g[k]);
+  if(falta.length){ alert('Completa los campos obligatorios: '+falta.join(', ')); return; }
+  autosave();
+  renderGatillantes();
+  go('gatillantes');
+}
+
+/* ---- Paso 2: Gatillantes ---- */
+function renderGatillantes(){
+  document.getElementById('gatList').innerHTML = CONFIG.gatillantes.map(g=>{
+    const v=currentEval.gatillantes[g.id];
+    return `<div class="gat">
+      <div class="q"><b>${g.texto} <i class="bi bi-info-circle help-i" title="${g.ayuda.replace(/"/g,'&quot;')}" onclick="alert('${g.ayuda.replace(/'/g,"\\'")}')"></i></b></div>
+      <div class="toggle">
+        <button class="yes ${v===true?'on':''}" onclick="setGat('${g.id}',true)">Sí</button>
+        <button class="no ${v===false?'on':''}" onclick="setGat('${g.id}',false)">No</button>
+      </div></div>`;
+  }).join('');
+}
+function setGat(id,val){ currentEval.gatillantes[id]=val; renderGatillantes(); autosave(); }
+function validarGatillantes(){
+  const sin = CONFIG.gatillantes.filter(g=>currentEval.gatillantes[g.id]===undefined);
+  if(sin.length){ alert('Responde todas las preguntas gatillantes.'); return; }
+  renderMulticriterio();
+  go('multicriterio');
+}
+
+/* ---- Paso 3: Multicriterio ---- */
+function renderMulticriterio(){
+  const crit = CONFIG.criterios.filter(c=>c.activo);
+  document.getElementById('critList').innerHTML = crit.map(c=>{
+    const sel=currentEval.respuestas[c.id];
+    const opts=c.opciones.map(o=>`<div class="opt ${sel===o.valor?'sel':''}" onclick="setCrit('${c.id}',${o.valor})">${o.label}</div>`).join('');
+    return `<div class="crit-card">
+      <h5><i class="bi bi-dot"></i>${c.nombre}</h5>
+      <div class="desc">${c.descripcion}</div>
+      <div class="opt-grid">${opts}</div>
+    </div>`;
+  }).join('');
+}
+function setCrit(id,val){ currentEval.respuestas[id]=val; renderMulticriterio(); autosave(); }
+
+/* ---- Paso 4: Resultado ---- */
+function calcularResultado(){
+  const crit = CONFIG.criterios.filter(c=>c.activo);
+  const sin = crit.filter(c=>currentEval.respuestas[c.id]==null);
+  if(sin.length){ alert('Faltan '+sin.length+' criterio(s) por responder.'); return; }
+  const R = MedproEngine.evaluar(currentEval.respuestas, currentEval.gatillantes, CONFIG);
+  currentEval.resultado = R;
+  currentEval.estado='completada';
+  Store.saveEvaluacion(currentEval);
+  renderResultado(R);
+  go('resultado');
+}
+
+function justificacion(R){
+  const n=nivelInfo(R.nivel);
+  let txt=`La actividad "<b>${currentEval.general.actividad}</b>" se clasifica como <b>${n.nombre}</b>. `;
+  if(R.gatillantesActivos.length){
+    txt+=`Se activaron ${R.gatillantesActivos.length} criterio(s) gatillante(s) crítico(s), lo que exige al menos un Procedimiento`;
+    txt+= R.nivel==='proceso'?' y, por su severidad, el modelado como Proceso. ':'. ';
+  } else {
+    txt+=`El índice de criticidad calculado (interno) ubica la actividad en este nivel. `;
+  }
+  txt+=`Los factores más influyentes fueron: <b>${R.top3.map(t=>t.nombre).join(', ')}</b>.`;
+  return txt;
+}
+function recomendaciones(R){
+  const base={
+    sin:['Registrar la actividad en el inventario aunque no requiera documento.','Revisar periódicamente si cambian las condiciones.'],
+    buena:['Difundir la buena práctica al equipo.','Capacitar informalmente a nuevos integrantes.'],
+    checklist:['Elaborar una lista de verificación con los pasos clave.','Definir responsable de aplicarla.'],
+    cartilla:['Diseñar una guía breve y visual.','Ubicarla en el punto de uso.'],
+    instructivo:['Redactar el paso a paso con imágenes.','Incluir advertencias de seguridad.'],
+    procedimiento:['Formalizar responsables, controles y registros.','Definir indicadores de cumplimiento.','Establecer control de versiones y capacitación.'],
+    proceso:['Modelar entradas, salidas, roles e indicadores (BPMN).','Definir dueño del proceso y KPIs.','Integrar controles de riesgo y continuidad operacional.']
+  };
+  let recs=[...(base[R.nivel]||[])];
+  R.top3.forEach(t=>{ if(t.valor>=3) recs.push(`Atender el criterio "${t.nombre}" (nivel alto): reforzar controles.`); });
+  return recs;
+}
+function renderResultado(R){
+  const n=nivelInfo(R.nivel), col=nivelColor(R.nivel);
+  const semColor={verde:'#16a34a',amarillo:'#eab308',rojo:'#dc2626'}[R.semaforo];
+  const semLabel={verde:'Criticidad baja',amarillo:'Criticidad media',rojo:'Criticidad alta'}[R.semaforo];
+  const top=R.top3.map((t,i)=>`
+    <div class="factor"><div class="rank">${i+1}</div>
+      <div style="flex:1"><b>${t.nombre}</b>
+        <div class="bar"><span style="width:${t.valor/4*100}%"></span></div></div>
+    </div>`).join('');
+  const recs=recomendaciones(R).map(r=>`<li>${r}</li>`).join('');
+  const gat=R.gatillantesActivos.length
+    ? `<div class="alert alert-warning py-2"><b>Condiciones críticas activadas:</b> ${R.gatillantesActivos.map(g=>g.texto.replace(/¿|\?/g,'')).join('; ')}.</div>`
+    : `<div class="alert alert-success py-2">No se activaron criterios gatillantes críticos.</div>`;
+
+  document.getElementById('resultContent').innerHTML = `
+    <div class="result-hero" style="background:linear-gradient(135deg,${col},${col}cc)">
+      <div class="badge-soft">Nivel documental recomendado</div>
+      <div class="ico"><i class="bi ${n.icon}"></i></div>
+      <div class="lvl">${n.nombre}</div>
+      <div style="opacity:.95">${n.desc}</div>
+      <div class="semaforo">
+        <div class="luz ${R.semaforo==='verde'?'on':''}" style="background:${R.semaforo==='verde'?'#16a34a':''}"></div>
+        <div class="luz ${R.semaforo==='amarillo'?'on':''}" style="background:${R.semaforo==='amarillo'?'#eab308':''}"></div>
+        <div class="luz ${R.semaforo==='rojo'?'on':''}" style="background:${R.semaforo==='rojo'?'#dc2626':''}"></div>
+      </div>
+      <div class="badge-soft mt-2" style="background:${semColor}">${semLabel}</div>
+    </div>
+
+    <div class="card2">
+      <h5 style="color:var(--brand-2)"><i class="bi bi-chat-square-quote"></i> Justificación automática</h5>
+      <p>${justificacion(R)}</p>
+      ${gat}
+      <h5 style="color:var(--brand-2)"><i class="bi bi-bar-chart"></i> Tres factores más influyentes</h5>
+      ${top}
+      <h5 style="color:var(--brand-2)" class="mt-3"><i class="bi bi-lightbulb"></i> Recomendaciones</h5>
+      <ul>${recs}</ul>
+    </div>
+
+    <div class="card2">
+      <h5 style="color:var(--brand-2)"><i class="bi bi-download"></i> Exportar informe</h5>
+      <div class="d-flex flex-wrap gap-2">
+        <button class="btn btn-outline-brand" onclick="exportPDF()"><i class="bi bi-file-pdf"></i> PDF</button>
+        <button class="btn btn-outline-brand" onclick="exportWord()"><i class="bi bi-file-word"></i> Word</button>
+        <button class="btn btn-outline-brand" onclick="exportExcel()"><i class="bi bi-file-excel"></i> Excel</button>
+        <button class="btn btn-brand ms-auto" onclick="nuevaEvaluacion()"><i class="bi bi-plus-circle"></i> Nueva evaluación</button>
+      </div>
+    </div>`;
+}
+
+/* ---- Autosave ---- */
+let saveTimer=null;
+function autosave(){
+  if(!currentEval) return;
+  clearTimeout(saveTimer);
+  saveTimer=setTimeout(()=>{
+    Store.saveEvaluacion(currentEval);
+    const a=document.getElementById('autosave'); a.classList.add('show');
+    setTimeout(()=>a.classList.remove('show'),1200);
+  },600);
+}
+
+/* ---- Historial ---- */
+async function renderHistorial(){
+  const evs=await Store.getEvaluaciones();
+  const fe=document.getElementById('h_empresa').value.toLowerCase();
+  const fa=document.getElementById('h_area').value.toLowerCase();
+  const fr=document.getElementById('h_result').value;
+  const fv=document.getElementById('h_evaluador').value.toLowerCase();
+  const sel=document.getElementById('h_result');
+  if(sel.options.length<=1){ NIVELES.forEach(n=>sel.insertAdjacentHTML('beforeend',`<option value="${n.key}">${n.nombre}</option>`)); }
+  const rows=evs.filter(e=>e.resultado)
+    .filter(e=>(e.general.empresa||'').toLowerCase().includes(fe))
+    .filter(e=>(e.general.area||'').toLowerCase().includes(fa))
+    .filter(e=>!fr || e.resultado.nivel===fr)
+    .filter(e=>(e.general.evaluador||'').toLowerCase().includes(fv));
+  const t=document.getElementById('histTable');
+  if(!rows.length){ t.innerHTML='<tr><td class="text-muted p-3">Sin evaluaciones registradas.</td></tr>'; return; }
+  t.innerHTML=`<thead><tr><th>Fecha</th><th>Empresa</th><th>Área</th><th>Actividad</th><th>Evaluador</th><th>Resultado</th><th></th></tr></thead><tbody>`+
+    rows.map(e=>{const n=nivelInfo(e.resultado.nivel);return `<tr>
+      <td>${e.general.fecha||''}</td><td>${e.general.empresa||''}</td><td>${e.general.area||''}</td>
+      <td>${e.general.actividad||''}</td><td>${e.general.evaluador||''}</td>
+      <td><span class="pill" style="background:${nivelColor(n.key)}">${n.nombre}</span></td>
+      <td class="text-nowrap">
+        <button class="btn btn-sm btn-outline-brand" title="Ver" onclick="verEval('${e.id}')"><i class="bi bi-eye"></i></button>
+        <button class="btn btn-sm btn-outline-brand" title="Duplicar" onclick="dupEval('${e.id}')"><i class="bi bi-files"></i></button>
+      </td></tr>`;}).join('')+`</tbody>`;
+}
+async function verEval(id){ const evs=await Store.getEvaluaciones(); const e=evs.find(x=>x.id===id); if(!e)return; currentEval=e; renderResultado(e.resultado); go('resultado'); }
+async function dupEval(id){ const evs=await Store.getEvaluaciones(); const e=evs.find(x=>x.id===id); if(!e)return;
+  currentEval=structuredClone(e); currentEval.id='EV-'+Date.now(); currentEval.estado='en_curso'; currentEval.resultado=null; currentEval.creado=new Date().toISOString();
+  ['empresa','area','proceso','actividad','responsable','evaluador','cargo','codigo','obs'].forEach(k=>{const el=document.getElementById('g_'+k);if(el)el.value=currentEval.general[k]||'';});
+  document.getElementById('g_fecha').value=currentEval.general.fecha;
+  go('general');
+}
+
+/* ---- Dashboard ---- */
+let chartDist=null, chartTrend=null;
+async function renderDashboard(){
+  const evs=(await Store.getEvaluaciones()).filter(e=>e.resultado);
+  const counts={}; NIVELES.forEach(n=>counts[n.key]=0);
+  evs.forEach(e=>counts[e.resultado.nivel]++);
+  const total=evs.length;
+  const criticos=counts.procedimiento+counts.proceso;
+  document.getElementById('dashKpis').innerHTML=`
+    <div class="kpi"><div class="n">${total}</div><div class="l">Evaluaciones totales</div></div>
+    <div class="kpi"><div class="n">${counts.proceso}</div><div class="l">Procesos</div></div>
+    <div class="kpi"><div class="n">${counts.procedimiento}</div><div class="l">Procedimientos</div></div>
+    <div class="kpi"><div class="n">${counts.instructivo}</div><div class="l">Instructivos</div></div>
+    <div class="kpi"><div class="n">${counts.cartilla+counts.checklist}</div><div class="l">Cartillas / Checklist</div></div>
+    <div class="kpi"><div class="n">${total?Math.round(criticos/total*100):0}%</div><div class="l">Actividades críticas</div></div>`;
+  // Distribución
+  const ctx1=document.getElementById('chartDist');
+  if(chartDist)chartDist.destroy();
+  chartDist=new Chart(ctx1,{type:'doughnut',data:{labels:NIVELES.map(n=>n.nombre),
+    datasets:[{data:NIVELES.map(n=>counts[n.key]),backgroundColor:NIVELES.map(n=>nivelColor(n.key))}]},
+    options:{plugins:{legend:{position:'right',labels:{color:getComputedStyle(document.body).color,font:{family:'Times New Roman'}}}}}});
+  // Tendencia por mes
+  const byMonth={};
+  evs.forEach(e=>{const m=(e.general.fecha||e.creado||'').slice(0,7); if(m)byMonth[m]=(byMonth[m]||0)+1;});
+  const months=Object.keys(byMonth).sort();
+  const ctx2=document.getElementById('chartTrend');
+  if(chartTrend)chartTrend.destroy();
+  chartTrend=new Chart(ctx2,{type:'line',data:{labels:months,
+    datasets:[{label:'Evaluaciones',data:months.map(m=>byMonth[m]),borderColor:'#0ea5e9',backgroundColor:'rgba(14,165,233,.2)',fill:true,tension:.3}]},
+    options:{plugins:{legend:{labels:{color:getComputedStyle(document.body).color}}},
+      scales:{x:{ticks:{color:getComputedStyle(document.body).color}},y:{ticks:{color:getComputedStyle(document.body).color},beginAtZero:true}}}});
+}
+async function renderInicioKpis(){
+  const evs=(await Store.getEvaluaciones()).filter(e=>e.resultado);
+  const proc=evs.filter(e=>e.resultado.nivel==='proceso'||e.resultado.nivel==='procedimiento').length;
+  document.getElementById('inicioKpis').innerHTML=`
+    <div class="kpi"><div class="n">${evs.length}</div><div class="l">Evaluaciones realizadas</div></div>
+    <div class="kpi"><div class="n">${proc}</div><div class="l">Procesos / Procedimientos</div></div>
+    <div class="kpi"><div class="n">${CONFIG.criterios.filter(c=>c.activo).length}</div><div class="l">Criterios activos</div></div>
+    <div class="kpi"><div class="n">${Store.isCloud()?'☁':'💾'}</div><div class="l">${Store.isCloud()?'Sincronizado en la nube':'Almacenamiento local'}</div></div>`;
+}
+
+/* ---- Administración ---- */
+function adminTab(tab,ev){
+  document.querySelectorAll('#adminTabs .nav-link').forEach(b=>b.classList.remove('active'));
+  ev.target.classList.add('active');
+  document.querySelectorAll('.admin-pane').forEach(p=>p.style.display='none');
+  document.getElementById('admin-'+tab).style.display='block';
+}
+function renderAdmin(){
+  // Organización
+  document.getElementById('admin-org').innerHTML=`
+    <div class="row g-3" style="max-width:640px">
+      <div class="col-md-8"><label class="f">Nombre de la organización / sistema</label><input class="form-control" id="a_nombre" value="${CONFIG.org.nombre}"></div>
+      <div class="col-md-4"><label class="f">Sigla (logo texto)</label><input class="form-control" id="a_sigla" value="${CONFIG.org.sigla}" maxlength="2"></div>
+      <div class="col-md-8"><label class="f">Correo de contacto</label><input class="form-control" id="a_contacto" value="${CONFIG.org.contacto||''}"></div>
+      <div class="col-md-8"><label class="f">Logo (URL de imagen, opcional)</label><input class="form-control" id="a_logo" value="${CONFIG.org.logo||''}"></div>
+    </div>
+    <button class="btn btn-brand mt-3" onclick="saveOrg()"><i class="bi bi-save"></i> Guardar organización</button>`;
+  // Criterios
+  document.getElementById('admin-crit').innerHTML=`
+    <p class="text-muted">Activa/desactiva criterios y ajusta su peso relativo. Los cambios afectan a las próximas evaluaciones.</p>
+    <div style="overflow-x:auto"><table class="tbl"><thead><tr><th>Activo</th><th>Criterio</th><th>Descripción</th><th style="width:150px">Peso</th></tr></thead><tbody>${
+      CONFIG.criterios.map((c,i)=>`<tr>
+        <td><input type="checkbox" ${c.activo?'checked':''} onchange="CONFIG.criterios[${i}].activo=this.checked"></td>
+        <td><input class="form-control form-control-sm" value="${c.nombre}" onchange="CONFIG.criterios[${i}].nombre=this.value"></td>
+        <td><input class="form-control form-control-sm" value="${c.descripcion}" onchange="CONFIG.criterios[${i}].descripcion=this.value"></td>
+        <td><input type="range" min="1" max="10" value="${c.peso}" oninput="CONFIG.criterios[${i}].peso=+this.value;this.nextElementSibling.textContent=this.value"> <b>${c.peso}</b></td>
+      </tr>`).join('')
+    }</tbody></table></div>
+    <button class="btn btn-brand mt-3" onclick="saveCrit()"><i class="bi bi-save"></i> Guardar criterios</button>`;
+  // Umbrales
+  document.getElementById('admin-umbr').innerHTML=`
+    <p class="text-muted">Rango del índice interno (0–100) y color para cada nivel documental.</p>
+    <div style="overflow-x:auto"><table class="tbl"><thead><tr><th>Nivel</th><th>Desde</th><th>Hasta</th><th>Color</th></tr></thead><tbody>${
+      CONFIG.umbrales.map((u,i)=>{const n=nivelInfo(u.key);return `<tr>
+        <td><b style="color:${nivelColor(u.key)}">${n.nombre}</b></td>
+        <td><input type="number" class="form-control form-control-sm" style="width:90px" value="${u.min}" onchange="CONFIG.umbrales[${i}].min=+this.value"></td>
+        <td><input type="number" class="form-control form-control-sm" style="width:90px" value="${u.max}" onchange="CONFIG.umbrales[${i}].max=+this.value"></td>
+        <td><input type="color" value="${nivelColor(u.key)}" onchange="CONFIG.colores['${u.key}']=this.value"></td>
+      </tr>`;}).join('')
+    }</tbody></table></div>
+    <button class="btn btn-brand mt-3" onclick="saveUmbr()"><i class="bi bi-save"></i> Guardar umbrales y colores</button>`;
+  // Sistema
+  document.getElementById('admin-sys').innerHTML=`
+    <p class="text-muted">Copias de seguridad y restablecimiento.</p>
+    <div class="d-flex flex-wrap gap-2">
+      <button class="btn btn-outline-brand" onclick="exportBackup()"><i class="bi bi-cloud-download"></i> Exportar respaldo (JSON)</button>
+      <label class="btn btn-outline-brand mb-0"><i class="bi bi-cloud-upload"></i> Importar respaldo<input type="file" accept=".json" hidden onchange="importBackup(this.files[0])"></label>
+      <button class="btn btn-outline-danger" onclick="resetConfig()"><i class="bi bi-arrow-counterclockwise"></i> Restablecer configuración</button>
+    </div>
+    <p class="mt-3" style="font-size:.85em;color:var(--muted)">Almacenamiento actual: <b>${Store.isCloud()?'Firebase (nube) + local':'Local (este navegador)'}</b>.
+    Para activar la nube, edita <code>firebaseConfig</code> al inicio del archivo.</p>`;
+}
+async function saveOrg(){
+  CONFIG.org.nombre=document.getElementById('a_nombre').value||'MEDPRO®';
+  CONFIG.org.sigla=document.getElementById('a_sigla').value||'M';
+  CONFIG.org.contacto=document.getElementById('a_contacto').value;
+  CONFIG.org.logo=document.getElementById('a_logo').value;
+  await Store.saveConfig(CONFIG); applyBranding(); toast('Organización guardada');
+}
+async function saveCrit(){ await Store.saveConfig(CONFIG); toast('Criterios guardados'); }
+async function saveUmbr(){ await Store.saveConfig(CONFIG); toast('Umbrales y colores guardados'); renderMetodologia(); }
+async function resetConfig(){ if(!confirm('¿Restablecer toda la configuración a los valores por defecto?'))return;
+  CONFIG=defaultConfig(); await Store.saveConfig(CONFIG); applyBranding(); renderAdmin(); renderMetodologia(); toast('Configuración restablecida'); }
+function exportBackup(){
+  Store.getEvaluaciones().then(evs=>{
+    const data={config:CONFIG,evaluaciones:evs,exportado:new Date().toISOString()};
+    dl(new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),'medpro_respaldo_'+Date.now()+'.json');
+  });
+}
+function importBackup(file){ if(!file)return; const r=new FileReader();
+  r.onload=async()=>{ try{ const d=JSON.parse(r.result);
+    if(d.config){CONFIG=d.config; await Store.saveConfig(CONFIG);}
+    if(Array.isArray(d.evaluaciones)){ for(const e of d.evaluaciones) await Store.saveEvaluacion(e); }
+    applyBranding(); renderAdmin(); toast('Respaldo importado');
+  }catch(e){alert('Archivo inválido');} };
+  r.readAsText(file);
+}
+function toast(msg){ const a=document.getElementById('autosave'); a.innerHTML='<i class="bi bi-check-circle"></i> '+msg; a.classList.add('show'); setTimeout(()=>a.classList.remove('show'),1600); }
+
+/* ---- Exportaciones ---- */
+function exportPDF(){
+  const {jsPDF}=window.jspdf; const doc=new jsPDF(); const e=currentEval, R=e.resultado, n=nivelInfo(R.nivel);
+  let y=18; const L=15;
+  doc.setFont('times','bold'); doc.setFontSize(18); doc.setTextColor(13,71,161);
+  doc.text(CONFIG.org.nombre+' — Informe de evaluación', L, y); y+=8;
+  doc.setDrawColor(13,71,161); doc.line(L,y,195,y); y+=8;
+  doc.setFontSize(11); doc.setTextColor(30); doc.setFont('times','normal');
+  const info=[['Empresa',e.general.empresa],['Área',e.general.area],['Proceso',e.general.proceso],['Actividad',e.general.actividad],
+    ['Responsable',e.general.responsable],['Evaluador',e.general.evaluador],['Fecha',e.general.fecha],['Código',e.general.codigo||'—']];
+  info.forEach(([k,v])=>{ doc.setFont('times','bold'); doc.text(k+':',L,y); doc.setFont('times','normal'); doc.text(String(v||''),L+40,y); y+=6; });
+  y+=4; doc.setFillColor(...hexRgb(nivelColor(R.nivel))); doc.rect(L,y-4,180,10,'F');
+  doc.setTextColor(255); doc.setFont('times','bold'); doc.setFontSize(13);
+  doc.text('Nivel documental recomendado: '+n.nombre, L+3, y+2.5); y+=14;
+  doc.setTextColor(30); doc.setFontSize(11); doc.setFont('times','bold'); doc.text('Justificación:',L,y); y+=6;
+  doc.setFont('times','normal');
+  const just=stripHtml(justificacion(R));
+  doc.splitTextToSize(just,178).forEach(l=>{doc.text(l,L,y);y+=5.5;});
+  y+=3; doc.setFont('times','bold'); doc.text('Factores más influyentes:',L,y); y+=6; doc.setFont('times','normal');
+  R.top3.forEach((t,i)=>{doc.text(`${i+1}. ${t.nombre}`,L+3,y);y+=5.5;});
+  y+=2; doc.setFont('times','bold'); doc.text('Recomendaciones:',L,y); y+=6; doc.setFont('times','normal');
+  recomendaciones(R).forEach(r=>{doc.splitTextToSize('• '+r,175).forEach(l=>{doc.text(l,L+3,y);y+=5.5;});});
+  doc.setFontSize(8); doc.setTextColor(120); doc.text('Generado por MEDPRO® · '+new Date().toLocaleString('es-CL'),L,290);
+  doc.save('MEDPRO_'+(e.general.actividad||'informe').replace(/\s+/g,'_')+'.pdf');
+}
+function exportWord(){
+  const e=currentEval,R=e.resultado,n=nivelInfo(R.nivel);
+  const html=`<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+  <head><meta charset='utf-8'><style>body{font-family:'Times New Roman';font-size:12pt}h1{color:#0d47a1}
+  table{border-collapse:collapse}td{border:1px solid #ccc;padding:5px}</style></head><body>
+  <h1>${CONFIG.org.nombre} — Informe de evaluación</h1>
+  <table><tr><td><b>Empresa</b></td><td>${e.general.empresa}</td><td><b>Área</b></td><td>${e.general.area}</td></tr>
+  <tr><td><b>Proceso</b></td><td>${e.general.proceso}</td><td><b>Actividad</b></td><td>${e.general.actividad}</td></tr>
+  <tr><td><b>Responsable</b></td><td>${e.general.responsable}</td><td><b>Evaluador</b></td><td>${e.general.evaluador}</td></tr>
+  <tr><td><b>Fecha</b></td><td>${e.general.fecha}</td><td><b>Código</b></td><td>${e.general.codigo||'—'}</td></tr></table>
+  <h2 style="color:${nivelColor(R.nivel)}">Nivel recomendado: ${n.nombre}</h2>
+  <p><b>Justificación:</b> ${justificacion(R)}</p>
+  <p><b>Factores más influyentes:</b> ${R.top3.map(t=>t.nombre).join(', ')}</p>
+  <p><b>Recomendaciones:</b></p><ul>${recomendaciones(R).map(r=>'<li>'+r+'</li>').join('')}</ul>
+  <p style="font-size:9pt;color:#888">Generado por MEDPRO® · ${new Date().toLocaleString('es-CL')}</p></body></html>`;
+  dl(new Blob(['﻿'+html],{type:'application/msword'}),'MEDPRO_'+(e.general.actividad||'informe').replace(/\s+/g,'_')+'.doc');
+}
+function exportExcel(){
+  const e=currentEval,R=e.resultado,n=nivelInfo(R.nivel);
+  const rows=[
+    ['MEDPRO — Informe de evaluación'],[],
+    ['Empresa',e.general.empresa],['Área',e.general.area],['Proceso',e.general.proceso],['Actividad',e.general.actividad],
+    ['Responsable',e.general.responsable],['Evaluador',e.general.evaluador],['Fecha',e.general.fecha],['Código',e.general.codigo||''],[],
+    ['Nivel recomendado',n.nombre],['Semáforo',R.semaforo],[],
+    ['Factores más influyentes'],...R.top3.map((t,i)=>[i+1,t.nombre]),[],
+    ['Recomendaciones'],...recomendaciones(R).map(r=>['',r])
+  ];
+  const ws=XLSX.utils.aoa_to_sheet(rows); const wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,ws,'Informe');
+  XLSX.writeFile(wb,'MEDPRO_'+(e.general.actividad||'informe').replace(/\s+/g,'_')+'.xlsx');
+}
+function dl(blob,name){const u=URL.createObjectURL(blob);const a=document.createElement('a');a.href=u;a.download=name;a.click();URL.revokeObjectURL(u);}
+function stripHtml(h){const d=document.createElement('div');d.innerHTML=h;return d.textContent;}
+function hexRgb(h){h=h.replace('#','');return [parseInt(h.slice(0,2),16),parseInt(h.slice(2,4),16),parseInt(h.slice(4,6),16)];}
+
+/* ---- Metodología / Ayuda (contenido) ---- */
+function renderMetodologia(){
+  document.getElementById('nivelesGrid').innerHTML = NIVELES.map(n=>`
+    <div class="col-md-6"><div class="d-flex gap-2 align-items-start p-2" style="background:var(--panel-2);border-radius:9px;border-left:4px solid ${nivelColor(n.key)}">
+      <i class="bi ${n.icon}" style="color:${nivelColor(n.key)};font-size:1.3em"></i>
+      <div><b>${n.nombre}</b><div style="font-size:.85em;color:var(--muted)">${n.desc}</div></div>
+    </div></div>`).join('');
+  document.getElementById('normativaList').innerHTML = CONFIG.normativa.map(x=>`<li>${x}</li>`).join('');
+}
+function renderAyuda(){
+  const gloss=[
+    ['Sistema experto','Software que orienta decisiones aplicando reglas y criterios ponderados, sin reemplazar el criterio profesional.'],
+    ['Criterio gatillante','Condición crítica que, si se cumple, obliga a un nivel documental mínimo (Procedimiento).'],
+    ['Índice MEDPRO','Valor interno (0–100) que resume la criticidad ponderada de la actividad.'],
+    ['Nivel documental','Tipo de documento recomendado: de "Sin documentación" a "Proceso".'],
+    ['Trazabilidad','Capacidad de reconstruir y justificar cada decisión con evidencia.']
+  ];
+  document.getElementById('glosario').innerHTML=gloss.map(([t,d])=>`<div class="mb-2"><b>${t}:</b> ${d}</div>`).join('');
+  const faqs=[
+    ['¿Por qué no veo los puntajes?','MEDPRO oculta los puntajes internos para evitar sesgos; solo muestra descripciones claras y el resultado justificado.'],
+    ['¿Puedo cambiar los criterios y pesos?','Sí, en Administración → Criterios y pesos, sin modificar el código.'],
+    ['¿Se guardan mis evaluaciones?','Sí, en este navegador (localStorage) y en Firebase si está configurado.'],
+    ['¿Cómo activo la nube?','Edita el objeto firebaseConfig al inicio del archivo con los datos de tu proyecto Firebase.']
+  ];
+  document.getElementById('faq').innerHTML=faqs.map(([q,a],i)=>`
+    <div class="accordion-item">
+      <h2 class="accordion-header"><button class="accordion-button collapsed" data-bs-toggle="collapse" data-bs-target="#faq${i}">${q}</button></h2>
+      <div id="faq${i}" class="accordion-collapse collapse" data-bs-parent="#faq"><div class="accordion-body">${a}</div></div>
+    </div>`).join('');
+  document.getElementById('contactAdmin').textContent=CONFIG.org.contacto||'—';
+}
+function acercaDe(){ alert(CONFIG.org.nombre+'\nSistema Experto de Nivel Documental\nVersión 1.0\n\nBasado en la metodología MEDPRO (Tomos I–X).\nISO 9000 · 9001 · 31000 · 45001 · 14001'); }
+
+/* ---- Branding ---- */
+function applyBranding(){
+  document.getElementById('brandName').textContent=CONFIG.org.nombre;
+  const mark=document.getElementById('brandMark');
+  if(CONFIG.org.logo){ mark.innerHTML=`<img src="${CONFIG.org.logo}" style="height:34px;border-radius:6px">`; }
+  else mark.textContent=CONFIG.org.sigla||'M';
+  document.querySelectorAll('.brandmark').forEach(el=>{ if(!el.querySelector('img')&&el!==mark) el.textContent=CONFIG.org.sigla||'M'; });
+  document.getElementById('contactAdmin').textContent=CONFIG.org.contacto||'—';
+  renderMetodologia();
+}
+
+/* -------------------- 5) ARRANQUE -------------------------------------- */
+(async function init(){
+  // Tema / fuente guardados
+  const th=localStorage.getItem('medpro_theme'); if(th==='dark') toggleTheme();
+  const ft=localStorage.getItem('medpro_font'); if(ft) document.documentElement.style.setProperty('--font-scale',ft);
+  Store.init();
+  CONFIG = await Store.getConfig();
+  applyBranding();
+  renderMetodologia();
+  renderAyuda();
+  renderInicioKpis();
+  go('inicio');
+})();
+</script>
+</body>
+</html>
