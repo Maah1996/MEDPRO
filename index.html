@@ -169,6 +169,24 @@ table.tbl tr:hover td{background:var(--panel-2)}
   border-radius:20px;font-size:.82em;box-shadow:var(--shadow);opacity:0;transition:.3s;z-index:1040}
 .autosave.show{opacity:1}
 .cloud-badge{font-size:.72em;padding:2px 8px;border-radius:20px}
+/* Ventana de ayuda (reemplaza el alert nativo) */
+.help-modal{display:none;position:fixed;inset:0;z-index:1060;align-items:center;justify-content:center;padding:18px}
+.help-modal.show{display:flex}
+.help-backdrop{position:absolute;inset:0;background:rgba(15,23,42,.55)}
+.help-box{position:relative;background:var(--panel);border:1px solid var(--border);border-radius:16px;
+  box-shadow:0 24px 70px rgba(0,0,0,.4);max-width:540px;width:100%;max-height:86vh;overflow-y:auto;animation:pop .2s}
+@keyframes pop{from{opacity:0;transform:scale(.96) translateY(10px)}to{opacity:1;transform:none}}
+.help-head{display:flex;align-items:center;gap:12px;padding:18px 20px 14px;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--panel)}
+.help-head .hicon{width:42px;height:42px;flex-shrink:0;border-radius:11px;background:var(--brand);color:#fff;
+  display:flex;align-items:center;justify-content:center;font-size:1.25em}
+.help-head h4{margin:0;font-size:1.12em;color:var(--brand-2);line-height:1.25}
+.help-head .close-x{margin-left:auto;background:none;border:none;font-size:1.6em;color:var(--muted);cursor:pointer;line-height:1;padding:0 4px}
+.help-head .close-x:hover{color:var(--text)}
+.help-body{padding:16px 22px 24px;font-size:.96em;line-height:1.6}
+.help-body p{margin:0 0 10px}
+.help-body h6{color:var(--brand-2);margin:16px 0 7px;font-size:.82em;text-transform:uppercase;letter-spacing:.05em}
+.help-body .ej{background:var(--panel-2);border-left:3px solid var(--accent);border-radius:8px;padding:8px 12px;margin:6px 0;font-size:.92em}
+.help-body .implica{background:rgba(14,165,233,.09);border:1px solid var(--border);border-radius:9px;padding:10px 13px;margin-top:4px}
 </style>
 </head>
 <body>
@@ -396,6 +414,19 @@ table.tbl tr:hover td{background:var(--panel-2)}
 
 <div class="autosave" id="autosave"><i class="bi bi-cloud-check"></i> Guardado</div>
 
+<!-- Ventana de ayuda -->
+<div class="help-modal" id="helpModal">
+  <div class="help-backdrop" onclick="closeHelp()"></div>
+  <div class="help-box">
+    <div class="help-head">
+      <div class="hicon"><i class="bi bi-info-lg"></i></div>
+      <h4 id="helpTitle"></h4>
+      <button class="close-x" onclick="closeHelp()" title="Cerrar">&times;</button>
+    </div>
+    <div class="help-body" id="helpBody"></div>
+  </div>
+</div>
+
 <!-- Libraries -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
@@ -437,12 +468,30 @@ const NIVELES = [
 const NIVEL_ORDER = NIVELES.map(n=>n.key);
 
 const DEFAULT_GATILLANTES = [
-  {id:'g1', texto:'¿Existe obligación legal o reglamentaria?', ayuda:'Normas, leyes, reglamentos o exigencias de un organismo fiscalizador que obliguen a documentar.'},
-  {id:'g2', texto:'¿La actividad puede provocar lesiones graves o fatales?', ayuda:'Potencial de accidentes serios a las personas (caídas de altura, energías peligrosas, etc.).'},
-  {id:'g3', texto:'¿Puede generar impacto ambiental significativo?', ayuda:'Derrames, emisiones, residuos peligrosos o afectación a recursos naturales.'},
-  {id:'g4', texto:'¿Puede detener la continuidad operacional?', ayuda:'Su falla interrumpe la operación, la producción o la entrega del servicio.'},
-  {id:'g5', texto:'¿Puede ocasionar pérdidas económicas críticas?', ayuda:'Errores que generan costos elevados, multas o pérdida de activos importantes.'},
-  {id:'g6', texto:'¿Está asociada a emergencias o respuesta ante incidentes?', ayuda:'Actividad que forma parte de planes de emergencia o respuesta a incidentes.'}
+  {id:'g1', texto:'¿Existe obligación legal o reglamentaria?',
+    ayuda:'Evalúa si alguna ley, reglamento, norma oficial, decreto o exigencia de un organismo fiscalizador (por ejemplo Dirección del Trabajo, SEREMI de Salud, SMA, Sernageomin, SEC o la mutualidad) obliga a mantener esta actividad documentada o a seguir un procedimiento formal.',
+    ejemplos:['Reglamento Interno de Higiene y Seguridad exigido por ley.','Procedimientos de trabajo seguro exigidos por la mutualidad o por Sernageomin en minería.','Registros de mantención obligatorios por la norma eléctrica (SEC).'],
+    implica:'Si la ley obliga, la actividad debe documentarse al menos como <b>Procedimiento</b>, sin importar su nivel de riesgo, porque un fiscalizador puede exigir la evidencia.'},
+  {id:'g2', texto:'¿La actividad puede provocar lesiones graves o fatales?',
+    ayuda:'Evalúa si un error, una omisión o una falla al ejecutar la actividad podría causar un accidente con lesiones serias, incapacidad permanente o incluso la muerte de una persona.',
+    ejemplos:['Trabajos en altura, espacios confinados o con electricidad.','Operación de maquinaria pesada o equipos a presión.','Manejo de sustancias peligrosas, tóxicas o inflamables.'],
+    implica:'Las actividades con potencial de daño grave a las personas requieren procedimientos claros y controles para proteger la vida (enfoque ISO 45001).'},
+  {id:'g3', texto:'¿Puede generar impacto ambiental significativo?',
+    ayuda:'Determina si la actividad, al fallar o realizarse mal, puede afectar el medio ambiente de forma relevante: contaminar agua, suelo o aire, generar residuos peligrosos o dañar recursos naturales.',
+    ejemplos:['Manejo o trasvasije de combustibles y aceites.','Descarga de residuos industriales líquidos (RILes).','Emisiones atmosféricas o manejo de sustancias tóxicas.'],
+    implica:'Un impacto ambiental significativo obliga a controlar y documentar la actividad para cumplir la normativa ambiental (enfoque ISO 14001) y evitar sanciones.'},
+  {id:'g4', texto:'¿Puede detener la continuidad operacional?',
+    ayuda:'Analiza si una falla en esta actividad podría detener la operación, la producción o la entrega del servicio de la organización, aunque no exista riesgo para las personas.',
+    ejemplos:['Respaldo de servidores o sistemas críticos de TI.','Mantención del único equipo de una línea de producción.','Suministro eléctrico o de agua a la planta.'],
+    implica:'Si su falla paraliza el negocio, la actividad es estratégica y conviene documentarla para asegurar que siempre se ejecute correctamente.'},
+  {id:'g5', texto:'¿Puede ocasionar pérdidas económicas críticas?',
+    ayuda:'Evalúa si un error en la actividad puede provocar pérdidas de dinero importantes: multas, retrabajos costosos, pérdida de activos, mermas o daño a equipos de alto valor.',
+    ejemplos:['Manejo de inventario o activos de alto costo.','Cálculo de remuneraciones o pagos a proveedores.','Configuración de equipos costosos que pueden dañarse.'],
+    implica:'El impacto económico alto justifica documentar la actividad para reducir la probabilidad de errores caros.'},
+  {id:'g6', texto:'¿Está asociada a emergencias o respuesta ante incidentes?',
+    ayuda:'Indica si la actividad forma parte de un plan de emergencia o de la respuesta ante incidentes: evacuaciones, primeros auxilios, control de derrames, incendios, etc.',
+    ejemplos:['Plan de evacuación y uso de vías de escape.','Respuesta ante derrame de sustancias peligrosas.','Uso de extintores o red húmeda ante un amago de incendio.'],
+    implica:'Las actividades de emergencia deben estar documentadas y entrenadas de antemano, porque durante el incidente no hay tiempo de improvisar.'}
 ];
 
 /* 15 criterios ponderados. Cada criterio: 5 opciones (valor interno 1..5, oculto al usuario). */
@@ -700,7 +749,7 @@ function renderGatillantes(){
   document.getElementById('gatList').innerHTML = CONFIG.gatillantes.map(g=>{
     const v=currentEval.gatillantes[g.id];
     return `<div class="gat">
-      <div class="q"><b>${g.texto} <i class="bi bi-info-circle help-i" title="${g.ayuda.replace(/"/g,'&quot;')}" onclick="alert('${g.ayuda.replace(/'/g,"\\'")}')"></i></b></div>
+      <div class="q"><b>${g.texto} <i class="bi bi-info-circle help-i" title="Ver explicación" onclick="showGatHelp('${g.id}')"></i></b></div>
       <div class="toggle">
         <button class="yes ${v===true?'on':''}" onclick="setGat('${g.id}',true)">Sí</button>
         <button class="no ${v===false?'on':''}" onclick="setGat('${g.id}',false)">No</button>
@@ -1076,7 +1125,31 @@ function renderAyuda(){
     </div>`).join('');
   document.getElementById('contactAdmin').textContent=CONFIG.org.contacto||'—';
 }
-function acercaDe(){ alert(CONFIG.org.nombre+'\nSistema Experto de Nivel Documental\nVersión 1.0\n\nBasado en la metodología MEDPRO (Tomos I–X).\nISO 9000 · 9001 · 31000 · 45001 · 14001'); }
+/* ---- Ventana de ayuda (modal profesional) ---- */
+function showHelp(titulo, cuerpoHtml){
+  document.getElementById('helpTitle').textContent = titulo;
+  document.getElementById('helpBody').innerHTML = cuerpoHtml;
+  document.getElementById('helpModal').classList.add('show');
+}
+function closeHelp(){ document.getElementById('helpModal').classList.remove('show'); }
+function showGatHelp(id){
+  const g = CONFIG.gatillantes.find(x=>x.id===id); if(!g) return;
+  let html = `<p>${g.ayuda}</p>`;
+  if(g.ejemplos && g.ejemplos.length){
+    html += `<h6>Ejemplos</h6>` + g.ejemplos.map(e=>`<div class="ej"><i class="bi bi-arrow-right-short"></i> ${e}</div>`).join('');
+  }
+  if(g.implica){ html += `<h6>¿Qué implica responder “Sí”?</h6><div class="implica">${g.implica}</div>`; }
+  showHelp(g.texto, html);
+}
+document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeHelp(); });
+
+function acercaDe(){
+  showHelp('Acerca de '+CONFIG.org.nombre,
+    `<p><b>Sistema Experto de Nivel Documental</b> — Versión 1.0</p>
+     <p>Determina, de forma objetiva, repetible y auditable, el nivel de documentación que requiere una actividad.</p>
+     <h6>Basado en</h6>
+     <p>Metodología MEDPRO (Tomos I–X) y las normas ISO 9000, 9001, 31000, 45001 y 14001.</p>`);
+}
 
 /* ---- Branding ---- */
 function applyBranding(){
