@@ -542,7 +542,19 @@ const DEFAULT_CRITERIOS = [
     opciones:esc5(['Ninguno','No genera ningún efecto ambiental.'],['Menor','Efecto ambiental leve y local.'],['Moderado','Efecto ambiental apreciable pero controlable.'],['Significativo','Efecto ambiental importante que requiere control.'],['Grave','Daño ambiental serio o difícil de revertir.'])},
   {id:'c15',nombre:'Reputación', descripcion:'Imagen institucional', peso:6, activo:true,
     ayuda:'Cuánto se daña la imagen o el prestigio de la organización si la actividad sale mal, ante clientes, la comunidad, las autoridades o en redes sociales.',
-    opciones:esc5(['Sin impacto','No afecta la imagen de la organización.'],['Bajo','Efecto menor en la imagen, poco visible.'],['Moderado','Puede afectar la imagen ante algunos actores.'],['Alto','Puede dañar visiblemente la reputación.'],['Crítico','Puede provocar una crisis de imagen grave.'])}
+    opciones:esc5(['Sin impacto','No afecta la imagen de la organización.'],['Bajo','Efecto menor en la imagen, poco visible.'],['Moderado','Puede afectar la imagen ante algunos actores.'],['Alto','Puede dañar visiblemente la reputación.'],['Crítico','Puede provocar una crisis de imagen grave.'])},
+  {id:'c16',nombre:'Detectabilidad', descripcion:'Facilidad para detectar el error a tiempo', peso:8, activo:true,
+    ayuda:'Mide qué tan fácil es darse cuenta de que la actividad se hizo mal ANTES de que provoque un daño. Un error que salta de inmediato es más manejable; uno que pasa desapercibido hasta que ya es tarde requiere más control y documentación. (Basado en la "detectabilidad" del método FMEA, Documento Técnico CAIGG N°75.)',
+    opciones:esc5(['Se detecta al instante','El error salta de inmediato y se corrige antes de causar daño.'],['Fácil de detectar','Se nota rápidamente con una revisión simple.'],['Detección media','Se detecta mediante controles o revisiones periódicas.'],['Difícil de detectar','Suele pasar desapercibido hasta etapas avanzadas.'],['Casi indetectable','No se detecta hasta que el daño ya ocurrió.'])},
+  {id:'c17',nombre:'Velocidad del riesgo', descripcion:'Tiempo de reacción antes del impacto', peso:6, activo:true,
+    ayuda:'Mide cuánto tiempo transcurre entre que la actividad falla y el momento en que se produce el daño. Si el impacto es inmediato (sin tiempo de reacción), la actividad necesita procedimientos claros preparados de antemano. (Basado en la "velocidad del riesgo", Documento Técnico CAIGG N°70.)',
+    opciones:esc5(['Muy lento','Pasa mucho tiempo entre el error y su impacto; hay margen de sobra para reaccionar.'],['Lento','Hay bastante tiempo para detectar y corregir antes del impacto.'],['Moderado','Hay algo de tiempo para reaccionar.'],['Rápido','El impacto llega pronto; queda poco tiempo para reaccionar.'],['Inmediato','El impacto es instantáneo; no hay tiempo de reacción.'])},
+  {id:'c18',nombre:'Contribución estratégica', descripcion:'Aporte a la misión y objetivos', peso:9, activo:true,
+    ayuda:'Mide cuánto aporta la actividad al cumplimiento de la misión y los objetivos estratégicos de la organización (o al valor público entregado a la ciudadanía). Mientras más estratégica, más conviene documentarla para asegurar que se ejecute siempre bien. (Basado en el "Nivel de Contribución", Documento Técnico CAIGG N°70.)',
+    opciones:esc5(['Nula','No aporta al cumplimiento de la misión ni de los objetivos.'],['Baja','Aporta de manera menor a los objetivos.'],['Media','Aporta de manera apreciable a los objetivos.'],['Alta','Aporta de manera importante a los objetivos estratégicos.'],['Fundamental','Es clave para cumplir la misión o entregar el valor público.'])},
+  {id:'c19',nombre:'Discrecionalidad / probidad', descripcion:'Nivel de decisión personal sin control', peso:7, activo:true,
+    ayuda:'Mide cuánto depende la actividad del criterio o la decisión personal de quien la ejecuta, sin reglas ni contrapesos. Una alta discrecionalidad no regulada aumenta el riesgo de errores y de faltas a la probidad, por lo que conviene documentarla y establecer controles. (Especialmente relevante en el sector público, Documento Técnico CAIGG N°70.)',
+    opciones:esc5(['Sin discrecionalidad','La actividad está totalmente reglada; no hay decisiones personales.'],['Baja','Casi todo está definido; muy pocas decisiones quedan a criterio personal.'],['Media','Existen algunas decisiones a criterio de quien la ejecuta.'],['Alta','Buena parte depende del criterio personal, con pocos contrapesos.'],['Muy alta','Amplia discrecionalidad sin regulación ni controles; alto riesgo de probidad.'])}
 ];
 
 const DEFAULT_UMBRALES = [
@@ -572,6 +584,21 @@ function defaultConfig(){
     normativa: structuredClone(DEFAULT_NORMATIVA),
     colores: NIVELES.reduce((o,n)=>{o[n.key]=n.color;return o;},{})
   };
+}
+
+/* Combina la configuración guardada con los valores por defecto, incorporando
+   criterios/gatillantes nuevos (por id) aunque exista una config previa guardada. */
+function mergeConfig(saved){
+  const base = defaultConfig();
+  const cfg = {...base, ...(saved||{})};
+  ['criterios','gatillantes'].forEach(key=>{
+    if(Array.isArray(saved && saved[key])){
+      const ids = new Set(saved[key].map(x=>x.id));
+      const faltantes = base[key].filter(x=>!ids.has(x.id));
+      cfg[key] = [...saved[key], ...faltantes];
+    }
+  });
+  return cfg;
 }
 
 /* -------------------- 2) MOTOR MEDPRO (desacoplado) -------------------- */
@@ -645,10 +672,10 @@ const Store = (function(){
   async function getConfig(){
     if(useCloud){
       try{ const d=await db.collection('medpro_config').doc('main').get();
-        if(d.exists) return {...defaultConfig(), ...d.data()}; }catch(e){console.warn(e);}
+        if(d.exists) return mergeConfig(d.data()); }catch(e){console.warn(e);}
     }
     const raw=localStorage.getItem(LKEY_CFG);
-    return raw ? {...defaultConfig(), ...JSON.parse(raw)} : defaultConfig();
+    return raw ? mergeConfig(JSON.parse(raw)) : defaultConfig();
   }
   async function saveConfig(cfg){
     localStorage.setItem(LKEY_CFG, JSON.stringify(cfg));
