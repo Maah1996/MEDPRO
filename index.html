@@ -91,6 +91,8 @@ a{color:var(--brand-2);text-decoration:none}
 @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 
 label.f{font-weight:bold;font-size:.9em;margin-bottom:3px;display:block}
+.hint{font-size:.8em;color:var(--muted);margin-top:4px;display:block;font-style:italic;line-height:1.35}
+.form-intro{background:var(--panel-2);border:1px solid var(--border);border-left:4px solid var(--brand);border-radius:9px;padding:12px 14px;margin-bottom:16px;font-size:.9em}
 .form-control,.form-select{font-family:inherit;font-size:calc(1rem*var(--font-scale))}
 .req::after{content:" *";color:#dc2626}
 
@@ -260,17 +262,29 @@ table.tbl tr:hover td{background:var(--panel-2)}
       <div class="card2">
         <h2>Información general</h2>
         <p class="sub">Identifica la actividad a evaluar. Los campos con * son obligatorios.</p>
+        <div class="form-intro">
+          <i class="bi bi-info-circle"></i> <b>¿Qué hago aquí?</b> Escribe una <b>actividad o tarea de tu departamento</b> y MEDPRO te dirá si necesita documentarse (instructivo, procedimiento, proceso, etc.).
+          Completa un dato por campo; usa los ejemplos como guía.
+        </div>
         <div class="row g-3">
-          <div class="col-md-6"><label class="f req">Empresa</label><input class="form-control" id="g_empresa"></div>
-          <div class="col-md-6"><label class="f req">Área</label><input class="form-control" id="g_area"></div>
-          <div class="col-md-6"><label class="f req">Proceso</label><input class="form-control" id="g_proceso"></div>
-          <div class="col-md-6"><label class="f req">Actividad</label><input class="form-control" id="g_actividad"></div>
-          <div class="col-md-6"><label class="f req">Responsable</label><input class="form-control" id="g_responsable"></div>
-          <div class="col-md-6"><label class="f req">Evaluador</label><input class="form-control" id="g_evaluador"></div>
-          <div class="col-md-4"><label class="f req">Fecha</label><input type="date" class="form-control" id="g_fecha"></div>
-          <div class="col-md-4"><label class="f">Cargo</label><input class="form-control" id="g_cargo"></div>
-          <div class="col-md-4"><label class="f">Código interno</label><input class="form-control" id="g_codigo"></div>
-          <div class="col-12"><label class="f">Observaciones</label><textarea class="form-control" id="g_obs" rows="2"></textarea></div>
+          <div class="col-md-6"><label class="f req">Empresa</label><input class="form-control" id="g_empresa" placeholder="Ej: Minera Los Andes S.A.">
+            <span class="hint">Nombre de tu organización.</span></div>
+          <div class="col-md-6"><label class="f req">Área / Departamento</label><input class="form-control" id="g_area" placeholder="Ej: Recursos Humanos, Bodega, Mantención">
+            <span class="hint">Tu departamento o área donde ocurre la actividad.</span></div>
+          <div class="col-12"><label class="f req">Actividad</label><input class="form-control" id="g_actividad" placeholder="Ej: Cambio de rodamiento de bomba de agua">
+            <span class="hint">La <b>tarea puntual que quieres evaluar</b>. Escríbela empezando con un verbo: cambiar, emitir, revisar, atender, cargar…</span></div>
+          <div class="col-md-6"><label class="f req">Responsable</label><input class="form-control" id="g_responsable" placeholder="Ej: Pedro Soto">
+            <span class="hint">Quién ejecuta o es dueño de la actividad.</span></div>
+          <div class="col-md-6"><label class="f req">Evaluador</label><input class="form-control" id="g_evaluador" placeholder="Ej: Marco Araya">
+            <span class="hint">Tú: la persona que completa esta evaluación.</span></div>
+          <div class="col-md-4"><label class="f req">Fecha</label><input type="date" class="form-control" id="g_fecha">
+            <span class="hint">Fecha en que realizas la evaluación.</span></div>
+          <div class="col-md-4"><label class="f">Cargo</label><input class="form-control" id="g_cargo" placeholder="Ej: Prevencionista de riesgos">
+            <span class="hint">Cargo del evaluador (opcional).</span></div>
+          <div class="col-md-4"><label class="f">Código interno</label><input class="form-control" id="g_codigo" placeholder="Ej: MEC-045">
+            <span class="hint">Código de referencia si tu área lo usa (opcional).</span></div>
+          <div class="col-12"><label class="f">Observaciones</label><textarea class="form-control" id="g_obs" rows="2" placeholder="Ej: Se realiza con el equipo detenido y bloqueo de energías."></textarea>
+            <span class="hint">Cualquier detalle relevante de la actividad (opcional).</span></div>
         </div>
         <div class="navbtns">
           <button class="btn btn-outline-brand" onclick="go('inicio')"><i class="bi bi-arrow-left"></i> Anterior</button>
@@ -657,12 +671,12 @@ function changeFont(delta){
 function nuevaEvaluacion(){
   currentEval = {
     id: 'EV-'+Date.now(),
-    general:{empresa:'',area:'',proceso:'',actividad:'',responsable:'',evaluador:'',fecha:new Date().toISOString().slice(0,10),cargo:'',codigo:'',obs:''},
+    general:{empresa:'',area:'',actividad:'',responsable:'',evaluador:'',fecha:new Date().toISOString().slice(0,10),cargo:'',codigo:'',obs:''},
     gatillantes:{}, respuestas:{}, resultado:null,
     estado:'en_curso', creado:new Date().toISOString()
   };
   document.getElementById('g_fecha').value = currentEval.general.fecha;
-  ['empresa','area','proceso','actividad','responsable','evaluador','cargo','codigo','obs'].forEach(k=>{
+  ['empresa','area','actividad','responsable','evaluador','cargo','codigo','obs'].forEach(k=>{
     const el=document.getElementById('g_'+k); if(el)el.value='';
   });
   go('general');
@@ -671,9 +685,9 @@ function nuevaEvaluacion(){
 /* ---- Paso 1: Info general ---- */
 function validarGeneral(){
   const g = currentEval.general;
-  const map={empresa:'g_empresa',area:'g_area',proceso:'g_proceso',actividad:'g_actividad',responsable:'g_responsable',evaluador:'g_evaluador',fecha:'g_fecha',cargo:'g_cargo',codigo:'g_codigo',obs:'g_obs'};
+  const map={empresa:'g_empresa',area:'g_area',actividad:'g_actividad',responsable:'g_responsable',evaluador:'g_evaluador',fecha:'g_fecha',cargo:'g_cargo',codigo:'g_codigo',obs:'g_obs'};
   Object.entries(map).forEach(([k,id])=>{ g[k]=document.getElementById(id).value.trim(); });
-  const req=['empresa','area','proceso','actividad','responsable','evaluador','fecha'];
+  const req=['empresa','area','actividad','responsable','evaluador','fecha'];
   const falta=req.filter(k=>!g[k]);
   if(falta.length){ alert('Completa los campos obligatorios: '+falta.join(', ')); return; }
   autosave();
@@ -845,7 +859,7 @@ async function renderHistorial(){
 async function verEval(id){ const evs=await Store.getEvaluaciones(); const e=evs.find(x=>x.id===id); if(!e)return; currentEval=e; renderResultado(e.resultado); go('resultado'); }
 async function dupEval(id){ const evs=await Store.getEvaluaciones(); const e=evs.find(x=>x.id===id); if(!e)return;
   currentEval=structuredClone(e); currentEval.id='EV-'+Date.now(); currentEval.estado='en_curso'; currentEval.resultado=null; currentEval.creado=new Date().toISOString();
-  ['empresa','area','proceso','actividad','responsable','evaluador','cargo','codigo','obs'].forEach(k=>{const el=document.getElementById('g_'+k);if(el)el.value=currentEval.general[k]||'';});
+  ['empresa','area','actividad','responsable','evaluador','cargo','codigo','obs'].forEach(k=>{const el=document.getElementById('g_'+k);if(el)el.value=currentEval.general[k]||'';});
   document.getElementById('g_fecha').value=currentEval.general.fecha;
   go('general');
 }
@@ -979,7 +993,7 @@ function exportPDF(){
   doc.text(CONFIG.org.nombre+' — Informe de evaluación', L, y); y+=8;
   doc.setDrawColor(13,71,161); doc.line(L,y,195,y); y+=8;
   doc.setFontSize(11); doc.setTextColor(30); doc.setFont('times','normal');
-  const info=[['Empresa',e.general.empresa],['Área',e.general.area],['Proceso',e.general.proceso],['Actividad',e.general.actividad],
+  const info=[['Empresa',e.general.empresa],['Área',e.general.area],['Actividad',e.general.actividad],
     ['Responsable',e.general.responsable],['Evaluador',e.general.evaluador],['Fecha',e.general.fecha],['Código',e.general.codigo||'—']];
   info.forEach(([k,v])=>{ doc.setFont('times','bold'); doc.text(k+':',L,y); doc.setFont('times','normal'); doc.text(String(v||''),L+40,y); y+=6; });
   y+=4; doc.setFillColor(...hexRgb(nivelColor(R.nivel))); doc.rect(L,y-4,180,10,'F');
@@ -1003,7 +1017,7 @@ function exportWord(){
   table{border-collapse:collapse}td{border:1px solid #ccc;padding:5px}</style></head><body>
   <h1>${CONFIG.org.nombre} — Informe de evaluación</h1>
   <table><tr><td><b>Empresa</b></td><td>${e.general.empresa}</td><td><b>Área</b></td><td>${e.general.area}</td></tr>
-  <tr><td><b>Proceso</b></td><td>${e.general.proceso}</td><td><b>Actividad</b></td><td>${e.general.actividad}</td></tr>
+  <tr><td><b>Actividad</b></td><td colspan="3">${e.general.actividad}</td></tr>
   <tr><td><b>Responsable</b></td><td>${e.general.responsable}</td><td><b>Evaluador</b></td><td>${e.general.evaluador}</td></tr>
   <tr><td><b>Fecha</b></td><td>${e.general.fecha}</td><td><b>Código</b></td><td>${e.general.codigo||'—'}</td></tr></table>
   <h2 style="color:${nivelColor(R.nivel)}">Nivel recomendado: ${n.nombre}</h2>
@@ -1017,7 +1031,7 @@ function exportExcel(){
   const e=currentEval,R=e.resultado,n=nivelInfo(R.nivel);
   const rows=[
     ['MEDPRO — Informe de evaluación'],[],
-    ['Empresa',e.general.empresa],['Área',e.general.area],['Proceso',e.general.proceso],['Actividad',e.general.actividad],
+    ['Empresa',e.general.empresa],['Área',e.general.area],['Actividad',e.general.actividad],
     ['Responsable',e.general.responsable],['Evaluador',e.general.evaluador],['Fecha',e.general.fecha],['Código',e.general.codigo||''],[],
     ['Nivel recomendado',n.nombre],['Semáforo',R.semaforo],[],
     ['Factores más influyentes'],...R.top3.map((t,i)=>[i+1,t.nombre]),[],
