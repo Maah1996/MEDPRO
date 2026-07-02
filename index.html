@@ -495,54 +495,54 @@ const DEFAULT_GATILLANTES = [
 ];
 
 /* 15 criterios ponderados. Cada criterio: 5 opciones (valor interno 1..5, oculto al usuario). */
-function esc5(a,b,c,d,e){return [
-  {label:a,valor:0},{label:b,valor:1},{label:c,valor:2},{label:d,valor:3},{label:e,valor:4}];}
+/* Cada opción es un par [etiqueta, definición]; el valor interno es la posición 0..4. */
+function esc5(a,b,c,d,e){ return [a,b,c,d,e].map((x,i)=>({label:x[0],valor:i,def:x[1]})); }
 const DEFAULT_CRITERIOS = [
   {id:'c1', nombre:'Criticidad', descripcion:'Consecuencia de ejecutar mal la actividad', peso:10, activo:true,
     ayuda:'Mide qué tan grave sería el resultado si la actividad se hace mal o falla. No se refiere al peligro para las personas (eso es "Riesgo"), sino al daño general al resultado, producto o servicio. A mayor consecuencia, más necesidad de documentar.',
-    opciones:esc5('Sin consecuencia','Consecuencia leve','Consecuencia moderada','Consecuencia grave','Consecuencia crítica')},
+    opciones:esc5(['Sin consecuencia','Si sale mal, no pasa nada relevante; se corrige sin efectos.'],['Consecuencia leve','Genera una molestia menor o un retrabajo fácil de corregir.'],['Consecuencia moderada','Afecta el resultado de forma notoria, pero manejable.'],['Consecuencia grave','Provoca un daño importante al producto, servicio o proceso.'],['Consecuencia crítica','El resultado es inaceptable: pérdida mayor o daño irreparable.'])},
   {id:'c2', nombre:'Riesgo', descripcion:'Nivel de peligro para las personas', peso:10, activo:true,
     ayuda:'Evalúa cuánto peligro físico representa la actividad para quien la ejecuta o para terceros: golpes, caídas, cortes, exposición a energías, máquinas o sustancias peligrosas.',
-    opciones:esc5('Sin riesgo','Riesgo bajo','Riesgo medio','Riesgo alto','Riesgo muy alto/fatal')},
+    opciones:esc5(['Sin riesgo','No hay peligro físico para las personas.'],['Riesgo bajo','Podría causar molestias o lesiones menores sin días perdidos (ej. un rasguño).'],['Riesgo medio','Puede causar lesiones que requieren atención médica o algunos días de reposo.'],['Riesgo alto','Puede causar lesiones serias o incapacitantes.'],['Riesgo muy alto/fatal','Puede causar lesiones permanentes o la muerte.'])},
   {id:'c3', nombre:'Cumplimiento legal', descripcion:'Normas aplicables', peso:9, activo:true,
     ayuda:'Indica si la actividad está regida por normas y de qué tipo, desde una simple recomendación interna hasta una exigencia legal obligatoria que un organismo fiscalizador puede auditar.',
-    opciones:esc5('No aplica','Recomendación','Norma interna','Norma externa','Exigencia legal obligatoria')},
+    opciones:esc5(['No aplica','No existe ninguna norma que regule la actividad.'],['Recomendación','Solo hay sugerencias o buenas prácticas, sin obligación.'],['Norma interna','La regula una política o procedimiento de la propia empresa.'],['Norma externa','La regula una norma técnica o de la industria (ISO, gremial, etc.).'],['Exigencia legal obligatoria','La exige la ley o un fiscalizador; su incumplimiento tiene sanción.'])},
   {id:'c4', nombre:'Complejidad', descripcion:'Cantidad de pasos y decisiones', peso:7, activo:true,
     ayuda:'Mide cuántos pasos, decisiones o variables tiene la actividad. Una tarea de un solo paso es simple; una con muchas etapas y decisiones es compleja y suele necesitar instrucciones escritas para no equivocarse.',
-    opciones:esc5('1 paso','Pocos pasos','Varios pasos','Muchos pasos','Muy compleja/multietapa')},
+    opciones:esc5(['1 paso','Se realiza en un solo paso simple.'],['Pocos pasos','Tiene unos pocos pasos claros y sin decisiones.'],['Varios pasos','Tiene varios pasos y alguna decisión intermedia.'],['Muchos pasos','Tiene muchos pasos y varias decisiones.'],['Muy compleja/multietapa','Muchas etapas, decisiones y dependencias; fácil de equivocarse.'])},
   {id:'c5', nombre:'Frecuencia', descripcion:'Periodicidad de ejecución', peso:5, activo:true,
     ayuda:'Con qué frecuencia se realiza la actividad. Mientras más seguido se ejecuta, más conviene estandarizarla para asegurar que siempre se haga igual y con la misma calidad.',
-    opciones:esc5('Excepcional','Anual','Mensual','Semanal','Diaria/permanente')},
+    opciones:esc5(['Excepcional','Se hace muy rara vez o una sola vez.'],['Anual','Se realiza aproximadamente una vez al año.'],['Mensual','Se realiza algunas veces al mes.'],['Semanal','Se realiza una o varias veces por semana.'],['Diaria/permanente','Se realiza todos los días o de forma continua.'])},
   {id:'c6', nombre:'Personas involucradas', descripcion:'Cantidad de participantes', peso:5, activo:true,
     ayuda:'Cuántas personas o áreas participan en la actividad. Mientras más gente interviene, más importante es documentar para que todos trabajen coordinados y de forma uniforme.',
-    opciones:esc5('1 persona','2-3 personas','Un equipo','Varias áreas','Toda la organización')},
+    opciones:esc5(['1 persona','La ejecuta una sola persona.'],['2-3 personas','Participan dos o tres personas.'],['Un equipo','Interviene un equipo completo de trabajo.'],['Varias áreas','Participan varias áreas o departamentos.'],['Toda la organización','Involucra a toda la organización.'])},
   {id:'c7', nombre:'Variabilidad', descripcion:'Grado de estandarización', peso:6, activo:true,
     ayuda:'Qué tan distinta se ejecuta la actividad cada vez. Si siempre se hace igual es estándar; si cambia según la persona, el turno o el día, es variable y conviene documentarla para unificar el criterio.',
-    opciones:esc5('Totalmente estándar','Casi estándar','Variable','Muy variable','Sin estándar')},
+    opciones:esc5(['Totalmente estándar','Siempre se hace exactamente igual.'],['Casi estándar','Se hace casi igual, con mínimas diferencias.'],['Variable','Cambia según la situación o la persona.'],['Muy variable','Cambia bastante cada vez que se ejecuta.'],['Sin estándar','No hay una forma definida; cada uno la hace a su manera.'])},
   {id:'c8', nombre:'Impacto económico', descripcion:'Costo del error', peso:8, activo:true,
     ayuda:'Cuánto dinero se pierde si la actividad sale mal: retrabajos, multas, mermas, pérdida de materiales o daño a equipos.',
-    opciones:esc5('Insignificante','Bajo','Moderado','Alto','Crítico')},
+    opciones:esc5(['Insignificante','El error casi no tiene costo.'],['Bajo','Genera un costo menor, fácil de absorber.'],['Moderado','Genera un costo apreciable pero manejable.'],['Alto','Genera un costo importante para el área.'],['Crítico','Genera pérdidas económicas graves para la organización.'])},
   {id:'c9', nombre:'Impacto al cliente', descripcion:'Afectación del servicio', peso:7, activo:true,
     ayuda:'Cuánto afecta al cliente (interno o externo) si la actividad falla: demoras, reclamos, mala calidad o pérdida de confianza.',
-    opciones:esc5('Ninguno','Bajo','Moderado','Alto','Severo')},
+    opciones:esc5(['Ninguno','El cliente no se ve afectado.'],['Bajo','Molestia menor apenas perceptible para el cliente.'],['Moderado','El cliente nota el problema y puede reclamar.'],['Alto','Afecta seriamente el servicio o la satisfacción del cliente.'],['Severo','Provoca pérdida del cliente o daño grave a la relación.'])},
   {id:'c10',nombre:'Experiencia requerida', descripcion:'Nivel técnico necesario', peso:6, activo:true,
     ayuda:'Qué nivel de conocimiento o especialización se necesita para ejecutarla bien. A mayor especialización, más valioso es documentarla para no depender de una sola persona.',
-    opciones:esc5('Ninguna','Básica','Intermedia','Avanzada','Especialista/certificado')},
+    opciones:esc5(['Ninguna','Cualquier persona puede hacerla sin preparación.'],['Básica','Requiere una inducción o capacitación breve.'],['Intermedia','Requiere experiencia previa en la tarea.'],['Avanzada','Requiere un técnico con buena experiencia.'],['Especialista/certificado','Requiere un especialista o una certificación formal.'])},
   {id:'c11',nombre:'Historial', descripcion:'Incidentes o reclamos previos', peso:6, activo:true,
     ayuda:'Si la actividad ha tenido problemas, errores, accidentes o reclamos en el pasado. Un mal historial es una señal clara de que necesita más control y documentación.',
-    opciones:esc5('Sin antecedentes','Aislados','Ocasionales','Frecuentes','Recurrentes/graves')},
+    opciones:esc5(['Sin antecedentes','Nunca ha presentado problemas.'],['Aislados','Ha tenido problemas muy puntuales y raros.'],['Ocasionales','Ha tenido problemas de vez en cuando.'],['Frecuentes','Presenta problemas con regularidad.'],['Recurrentes/graves','Problemas repetidos o de consecuencias serias.'])},
   {id:'c12',nombre:'Trazabilidad', descripcion:'Necesidad de evidencia', peso:7, activo:true,
     ayuda:'Si se necesita dejar registro de que la actividad se hizo y de cómo se hizo, ya sea para auditorías, respaldo legal o control interno.',
-    opciones:esc5('No requiere','Deseable','Recomendada','Necesaria','Obligatoria')},
+    opciones:esc5(['No requiere','No es necesario dejar registro.'],['Deseable','Sería útil registrar, pero no es indispensable.'],['Recomendada','Conviene registrar para control interno.'],['Necesaria','Se necesita registro para respaldar la actividad.'],['Obligatoria','El registro es obligatorio (auditoría o ley).'])},
   {id:'c13',nombre:'Continuidad operacional', descripcion:'Importancia para el negocio', peso:9, activo:true,
     ayuda:'Qué tan vital es la actividad para que la organización siga operando. Si es estratégica, documentarla asegura que nunca se detenga por depender de una sola persona.',
-    opciones:esc5('Irrelevante','Baja','Media','Alta','Vital/estratégica')},
+    opciones:esc5(['Irrelevante','Si se detiene, no afecta la operación.'],['Baja','Su detención tiene poco impacto.'],['Media','Su detención afecta parcialmente la operación.'],['Alta','Su detención afecta seriamente la operación.'],['Vital/estratégica','Sin ella, la organización no puede operar.'])},
   {id:'c14',nombre:'Impacto ambiental', descripcion:'Consecuencia ambiental', peso:7, activo:true,
     ayuda:'El daño al medio ambiente si la actividad falla: contaminación de agua, suelo o aire, residuos peligrosos o emisiones.',
-    opciones:esc5('Ninguno','Menor','Moderado','Significativo','Grave')},
+    opciones:esc5(['Ninguno','No genera ningún efecto ambiental.'],['Menor','Efecto ambiental leve y local.'],['Moderado','Efecto ambiental apreciable pero controlable.'],['Significativo','Efecto ambiental importante que requiere control.'],['Grave','Daño ambiental serio o difícil de revertir.'])},
   {id:'c15',nombre:'Reputación', descripcion:'Imagen institucional', peso:6, activo:true,
     ayuda:'Cuánto se daña la imagen o el prestigio de la organización si la actividad sale mal, ante clientes, la comunidad, las autoridades o en redes sociales.',
-    opciones:esc5('Sin impacto','Bajo','Moderado','Alto','Crítico')}
+    opciones:esc5(['Sin impacto','No afecta la imagen de la organización.'],['Bajo','Efecto menor en la imagen, poco visible.'],['Moderado','Puede afectar la imagen ante algunos actores.'],['Alto','Puede dañar visiblemente la reputación.'],['Crítico','Puede provocar una crisis de imagen grave.'])}
 ];
 
 const DEFAULT_UMBRALES = [
@@ -784,7 +784,7 @@ function renderMulticriterio(){
   const crit = CONFIG.criterios.filter(c=>c.activo);
   document.getElementById('critList').innerHTML = crit.map(c=>{
     const sel=currentEval.respuestas[c.id];
-    const opts=c.opciones.map(o=>`<div class="opt ${sel===o.valor?'sel':''}" onclick="setCrit('${c.id}',${o.valor})">${o.label}</div>`).join('');
+    const opts=c.opciones.map(o=>`<div class="opt ${sel===o.valor?'sel':''}" title="${(o.def||'').replace(/"/g,'&quot;')}" onclick="setCrit('${c.id}',${o.valor})">${o.label}</div>`).join('');
     return `<div class="crit-card">
       <h5><i class="bi bi-dot"></i>${c.nombre} <i class="bi bi-info-circle help-i" title="Ver explicación" onclick="showCritHelp('${c.id}')"></i></h5>
       <div class="desc">${c.descripcion}</div>
@@ -1161,8 +1161,8 @@ function showCritHelp(id){
   let html = `<p>${c.ayuda || c.descripcion}</p>`;
   if(c.opciones && c.opciones.length){
     const ord=[...c.opciones].sort((a,b)=>a.valor-b.valor);
-    html += `<h6>Opciones, de menor a mayor</h6>`+
-      ord.map(o=>`<div class="ej"><i class="bi bi-arrow-right-short"></i> ${o.label}</div>`).join('');
+    html += `<h6>Qué significa cada opción</h6>`+
+      ord.map(o=>`<div class="ej"><b>${o.label}</b>${o.def? ' — '+o.def : ''}</div>`).join('');
     html += `<div class="implica">Elige la opción que <b>mejor describa tu actividad</b>. No hay respuestas buenas ni malas: se trata de reflejar la realidad. El sistema pondera todos los criterios automáticamente para darte la recomendación.</div>`;
   }
   showHelp(c.nombre, html);
