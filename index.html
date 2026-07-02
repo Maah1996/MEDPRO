@@ -93,6 +93,8 @@ a{color:var(--brand-2);text-decoration:none}
 label.f{font-weight:bold;font-size:.9em;margin-bottom:3px;display:block}
 .hint{font-size:.8em;color:var(--muted);margin-top:4px;display:block;font-style:italic;line-height:1.35}
 .form-intro{background:var(--panel-2);border:1px solid var(--border);border-left:4px solid var(--brand);border-radius:9px;padding:12px 14px;margin-bottom:16px;font-size:.9em}
+.guia-list li,.guia-pasos li{margin-bottom:8px;line-height:1.5}
+.guia-pasos li{padding-left:4px}
 .form-control,.form-select{font-family:inherit;font-size:calc(1rem*var(--font-scale))}
 .req::after{content:" *";color:#dc2626}
 
@@ -350,6 +352,11 @@ table.tbl tr:hover td{background:var(--panel-2)}
       <div id="resultContent"></div>
     </section>
 
+    <!-- ===== GUÍA "CÓMO HACERLO" ===== -->
+    <section class="section" id="s-guia">
+      <div id="guiaContent"></div>
+    </section>
+
     <!-- ===== HISTORIAL ===== -->
     <section class="section" id="s-historial">
       <div class="card2">
@@ -474,6 +481,97 @@ const NIVELES = [
   {key:'proceso',    nombre:'Proceso',           color:'#dc2626', icon:'bi-diagram-3-fill', desc:'Modelado completo (entradas, salidas, indicadores) para actividades de alta criticidad y continuidad.'}
 ];
 const NIVEL_ORDER = NIVELES.map(n=>n.key);
+
+/* Guías "cómo hacerlo" por nivel documental. Respaldo: CAIGG DT70/75/89,
+   RAA-03014 Ejército de Chile, INSST NTP 560, ISO 9001. */
+const GUIAS = {
+  sin:{
+    queEs:'La actividad es tan simple y de bajo riesgo que no requiere un documento formal.',
+    cuando:'Tareas triviales, sin riesgos, sin requisitos legales y fáciles de ejecutar.',
+    estructura:null, plantilla:false,
+    pasos:['Registra la actividad en el inventario de actividades del área (aunque no lleve documento).',
+      'Revisa periódicamente si cambian las condiciones (riesgo, frecuencia, normativa).',
+      'Si algo cambia, vuelve a evaluarla en MEDPRO.'],
+    consejos:['No documentar por documentar: la sobre-documentación también es un problema.',
+      'Basta con que el responsable conozca la tarea.'],
+    fuente:'ISO 9001:2015 — principio de proporcionalidad de la información documentada.'},
+  buena:{
+    queEs:'Una recomendación general de cómo ejecutar bien la actividad, sin formalidad estricta.',
+    cuando:'Cuando conviene compartir una forma probada de hacer algo, sin necesidad de un procedimiento formal.',
+    plantilla:true,
+    estructura:['Nombre de la buena práctica','Situación o problema que resuelve','Descripción de la práctica (qué hacer)','Beneficio o impacto esperado','Responsable y a quién aplica','Cómo difundirla / capacitar'],
+    pasos:['Describe en forma simple la acción de mejora: origen, responsable, plazo e impacto esperado.',
+      'Redáctala de modo que cualquier persona pueda entenderla y aplicarla.',
+      'Difúndela al equipo (reunión, mural, intranet).',
+      'Registra su resultado para poder replicarla en otros casos.'],
+    consejos:['Debe ser breve y fácil de replicar.','Guárdala donde el equipo la vea.'],
+    fuente:'Buenas prácticas de mejora continua (Planear.cl, Chile) e ISO 9001.'},
+  checklist:{
+    queEs:'Una lista de verificación de los puntos o pasos clave que no se deben omitir.',
+    cuando:'Actividades repetitivas y estandarizables donde el riesgo principal es olvidar un paso.',
+    plantilla:true,
+    estructura:['Encabezado (actividad, área, responsable, fecha)','Lista de ítems a verificar','Columna Cumple / No cumple / N/A','Observaciones','Firma del responsable'],
+    pasos:['Identifica los pasos o puntos críticos que no pueden faltar.',
+      'Redáctalos como ítems verificables (una acción por línea, empezando con verbo).',
+      'Ordénalos en la secuencia real de ejecución.',
+      'Agrega casillas Cumple/No cumple y espacio para observaciones.',
+      'Pruébala en terreno y ajústala.'],
+    consejos:['Cada ítem debe ser objetivo: se cumple o no se cumple.','No mezcles varias verificaciones en un mismo ítem.'],
+    fuente:'CAIGG DT N°75 — Lista de Verificación.'},
+  cartilla:{
+    queEs:'Una guía breve y visual con los puntos esenciales de una actividad.',
+    cuando:'Actividades que necesitan una ayuda rápida y visual en el punto de uso. Según el RAA-03014, la cartilla se asocia a una actividad.',
+    plantilla:true,
+    estructura:['Título de la actividad','Objetivo (para qué)','Materiales / recursos necesarios','Puntos clave o pasos esenciales','Advertencias o precauciones','Responsable / contacto'],
+    pasos:['Define la actividad puntual que cubrirá la cartilla.',
+      'Resume solo los puntos esenciales (los más importantes).',
+      'Usa apoyo visual: íconos, imágenes o esquemas simples.',
+      'Mantenla en una sola página, fácil de leer de un vistazo.',
+      'Ubícala en el punto de uso.'],
+    consejos:['Menos es más: solo lo esencial.','Está pensada para consulta rápida, no para leerse completa.'],
+    fuente:'RAA-03014 Ejército de Chile (cartilla asociada a una actividad).'},
+  instructivo:{
+    queEs:'Instrucciones paso a paso para ejecutar una tarea con cierta complejidad o riesgo medio.',
+    cuando:'Tareas de varios pasos donde importa hacerlas en orden y con seguridad.',
+    plantilla:true,
+    estructura:['Objetivo / propósito','Alcance (a qué y a quién aplica)','Responsabilidades','Materiales / equipos / EPP','Desarrollo: pasos numerados (con imágenes)','Advertencias de seguridad','Referencias legales o normativas','Control de versión (versión, fecha, autor)'],
+    pasos:['Define el objetivo y el alcance de la tarea.',
+      'Enumera responsabilidades y recursos/EPP necesarios.',
+      'Redacta los pasos numerados: una acción por paso, en lenguaje simple y directo.',
+      'Destaca las advertencias de seguridad dentro de cada paso.',
+      'Agrega imágenes o esquemas donde ayuden a entender.',
+      'Incluye referencias y control de versión.'],
+    consejos:['Un paso = una acción, sin ambigüedades.','La seguridad va integrada en el paso, no solo al final.'],
+    fuente:'INSST NTP 560 (España) e ISO 9001 — instrucciones de trabajo.'},
+  procedimiento:{
+    queEs:'Documento formal que define responsables, controles y registros para una actividad crítica o exigida por ley.',
+    cuando:'Actividades críticas, con riesgo alto o requisito legal. Según el RAA-03014 se elabora a partir del diagrama de flujo.',
+    plantilla:true,
+    estructura:['Objetivo','Alcance','Definiciones','Marco jurídico y reglamentario','Entradas','Etapas, actividades y tareas','Participantes / responsables (quién hace qué)','Interrelaciones','Salidas (productos / registros)','Indicadores de gestión','Controles (incluida la mitigación de riesgos)','Control de versión y aprobación'],
+    pasos:['Levanta y diagrama el flujo de la actividad (entradas → actividades → salidas).',
+      'Identifica los participantes y qué hace cada uno.',
+      'Redacta el detalle: entradas, etapas, actividades, tareas y salidas.',
+      'Indica el marco jurídico y reglamentario que lo norma.',
+      'Define indicadores de gestión y controles (incluidos los de riesgo).',
+      'Formaliza y aprueba (firma de la autoridad), con control de versión.'],
+    consejos:['El procedimiento describe QUÉ, QUIÉN y CUÁNDO; el instructivo describe el CÓMO detallado.',
+      'Incluye siempre los controles que mitigan los riesgos identificados.'],
+    fuente:'RAA-03014 Ejército de Chile (Art. 28) + CAIGG DT N°70.'},
+  proceso:{
+    queEs:'Modelado completo de un conjunto de actividades con entradas, transformación, salidas, indicadores y un dueño.',
+    cuando:'Actividades de alta criticidad, transversales o clave para la misión (contribución estratégica alta).',
+    plantilla:true,
+    estructura:['Nombre y objetivo del proceso','Dueño del proceso','Alcance (inicio y fin)','Proveedores y Entradas','Actividades / subprocesos (mapa de proceso)','Salidas y Clientes (SIPOC)','Diagrama de flujo','Indicadores (KPI)','Riesgos y controles','Documentos asociados (procedimientos, instructivos)','Formalización / aprobación'],
+    pasos:['Identifica el proceso y su aporte a los objetivos estratégicos.',
+      'Define entradas, proveedores, salidas y clientes (herramienta SIPOC).',
+      'Levanta el mapa del proceso: actividades y subprocesos.',
+      'Diagrama el flujo (por ejemplo con BIZAGI) con sus participantes.',
+      'Define el dueño del proceso, los indicadores (KPI) y los controles de riesgo.',
+      'Asocia los procedimientos/instructivos que lo componen y formalízalo.'],
+    consejos:['Un proceso agrupa varios procedimientos; se define por su alcance y aporte estratégico, no solo por el riesgo.',
+      'Todo proceso debe tener un dueño e indicadores.'],
+    fuente:'CAIGG DT N°70/N°89 + RAA-03014 Ejército de Chile (SIPOC, mapa y flujo).'}
+};
 
 const DEFAULT_GATILLANTES = [
   {id:'g1', texto:'¿Existe obligación legal o reglamentaria?',
@@ -716,7 +814,7 @@ let currentEval = null;           // evaluación en curso
 const FLOW = ['general','gatillantes','multicriterio','resultado'];
 const STEP_NAMES = {general:'Información',gatillantes:'Gatillantes',multicriterio:'Multicriterio',resultado:'Resultado'};
 const CRUMBS = {inicio:'Inicio',metodologia:'Metodología',general:'Información general',gatillantes:'Criterios gatillantes',
-  multicriterio:'Evaluación multicriterio',resultado:'Resultado',historial:'Historial',dashboard:'Dashboard',admin:'Administración',ayuda:'Ayuda'};
+  multicriterio:'Evaluación multicriterio',resultado:'Resultado',guia:'Guía: cómo hacerlo',historial:'Historial',dashboard:'Dashboard',admin:'Administración',ayuda:'Ayuda'};
 
 function nivelInfo(key){ return NIVELES.find(n=>n.key===key); }
 function nivelColor(key){ return (CONFIG.colores&&CONFIG.colores[key]) || nivelInfo(key).color; }
@@ -886,7 +984,7 @@ function renderResultado(R){
     <div class="result-hero" style="background:linear-gradient(135deg,${col},${col}cc)">
       <div class="badge-soft">Nivel documental recomendado</div>
       <div class="ico"><i class="bi ${n.icon}"></i></div>
-      <div class="lvl">${n.nombre}</div>
+      <div class="lvl" style="cursor:pointer" onclick="verGuia('${R.nivel}')" title="Ver guía: cómo hacerlo">${n.nombre}</div>
       <div style="opacity:.95">${n.desc}</div>
       <div class="semaforo">
         <div class="luz ${R.semaforo==='verde'?'on':''}" style="background:${R.semaforo==='verde'?'#16a34a':''}"></div>
@@ -894,6 +992,7 @@ function renderResultado(R){
         <div class="luz ${R.semaforo==='rojo'?'on':''}" style="background:${R.semaforo==='rojo'?'#dc2626':''}"></div>
       </div>
       <div class="badge-soft mt-2" style="background:${semColor}">${semLabel}</div>
+      <div style="margin-top:16px"><button class="btn" style="background:#fff;color:${col};font-weight:bold" onclick="verGuia('${R.nivel}')"><i class="bi bi-journal-text"></i> ¿Cómo hago ${n.nombre==='Sin documentación'?'esto':'un/una '+n.nombre}? — Guía paso a paso</button></div>
     </div>
 
     <div class="card2">
@@ -904,6 +1003,7 @@ function renderResultado(R){
       ${top}
       <h5 style="color:var(--brand-2)" class="mt-3"><i class="bi bi-lightbulb"></i> Recomendaciones</h5>
       <ul>${recs}</ul>
+      <button class="btn btn-brand" onclick="verGuia('${R.nivel}')"><i class="bi bi-journal-text"></i> Ver guía paso a paso para hacer ${n.nombre}</button>
     </div>
 
     <div class="card2">
@@ -915,6 +1015,55 @@ function renderResultado(R){
         <button class="btn btn-brand ms-auto" onclick="nuevaEvaluacion()"><i class="bi bi-plus-circle"></i> Nueva evaluación</button>
       </div>
     </div>`;
+}
+
+/* ---- Guía "cómo hacerlo" ---- */
+function verGuia(nivelKey){ go('guia'); renderGuia(nivelKey); window.scrollTo(0,0); }
+function volverDeGuia(){ (currentEval && currentEval.resultado) ? go('resultado') : go('metodologia'); }
+function renderGuia(nivelKey){
+  const g = GUIAS[nivelKey]; if(!g) return;
+  const n = nivelInfo(nivelKey), col = nivelColor(nivelKey);
+  const estructura = g.estructura ? `<h5 style="color:var(--brand-2)"><i class="bi bi-diagram-2"></i> Estructura del documento</h5>
+      <ol class="guia-list">${g.estructura.map(s=>`<li>${s}</li>`).join('')}</ol>` : '';
+  const consejos = (g.consejos&&g.consejos.length) ? `<h5 style="color:var(--brand-2)" class="mt-3"><i class="bi bi-lightbulb"></i> Consejos</h5>
+      <ul>${g.consejos.map(c=>`<li>${c}</li>`).join('')}</ul>` : '';
+  const plantillaBtn = g.plantilla ? `<button class="btn btn-brand" onclick="descargarPlantilla('${nivelKey}')"><i class="bi bi-file-earmark-word"></i> Descargar plantilla en Word</button>` : '';
+  document.getElementById('guiaContent').innerHTML = `
+    <div class="result-hero" style="background:linear-gradient(135deg,${col},${col}cc);padding:22px">
+      <div class="badge-soft"><i class="bi bi-journal-text"></i> Guía: cómo hacerlo</div>
+      <div class="ico"><i class="bi ${n.icon}"></i></div>
+      <div class="lvl" style="font-size:1.9em">${n.nombre}</div>
+      <div style="opacity:.95;max-width:640px;margin:4px auto 0">${g.queEs}</div>
+    </div>
+    <div class="card2">
+      <h5 style="color:var(--brand-2)"><i class="bi bi-question-circle"></i> ¿Cuándo se usa?</h5>
+      <p>${g.cuando}</p>
+      ${estructura}
+      <h5 style="color:var(--brand-2)" class="mt-3"><i class="bi bi-list-ol"></i> Paso a paso para elaborarlo</h5>
+      <ol class="guia-pasos">${g.pasos.map(p=>`<li>${p}</li>`).join('')}</ol>
+      ${consejos}
+      <div class="implica" style="margin-top:12px"><i class="bi bi-shield-check"></i> <b>Respaldo:</b> ${g.fuente}</div>
+      <div class="navbtns" style="margin-top:16px">
+        <button class="btn btn-outline-brand" onclick="volverDeGuia()"><i class="bi bi-arrow-left"></i> Volver</button>
+        ${plantillaBtn}
+      </div>
+    </div>`;
+  document.getElementById('crumb').textContent = 'Guía: '+n.nombre;
+}
+function descargarPlantilla(nivelKey){
+  const g = GUIAS[nivelKey], n = nivelInfo(nivelKey);
+  const e = (currentEval && currentEval.general) ? currentEval.general : {};
+  const secciones = (g.estructura||[]).map(s=>`<h2 style="color:#0d47a1;font-size:13pt;margin-bottom:2pt">${s}</h2><p style="color:#999">[ Completar: ${s} ]</p>`).join('');
+  const html = `<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+  <head><meta charset='utf-8'><style>body{font-family:'Times New Roman';font-size:12pt}table{border-collapse:collapse}td{border:1px solid #ccc;padding:5px}</style></head><body>
+  <h1 style="color:#0d47a1">${n.nombre}: ${e.actividad||'[Actividad]'}</h1>
+  <table><tr><td><b>Empresa</b></td><td>${e.empresa||''}</td><td><b>Área</b></td><td>${e.area||''}</td></tr>
+  <tr><td><b>Responsable</b></td><td>${e.responsable||''}</td><td><b>Fecha</b></td><td>${e.fecha||''}</td></tr>
+  <tr><td><b>Versión</b></td><td>1.0</td><td><b>Elaborado por</b></td><td>${e.evaluador||''}</td></tr></table>
+  <br>${secciones}
+  <p style="font-size:9pt;color:#888">Plantilla generada por MEDPRO® — Estructura basada en ${g.fuente}</p>
+  </body></html>`;
+  dl(new Blob(['﻿'+html],{type:'application/msword'}), 'Plantilla_'+n.nombre.replace(/\s+/g,'_')+'.doc');
 }
 
 /* ---- Autosave ---- */
@@ -1147,9 +1296,9 @@ function hexRgb(h){h=h.replace('#','');return [parseInt(h.slice(0,2),16),parseIn
 /* ---- Metodología / Ayuda (contenido) ---- */
 function renderMetodologia(){
   document.getElementById('nivelesGrid').innerHTML = NIVELES.map(n=>`
-    <div class="col-md-6"><div class="d-flex gap-2 align-items-start p-2" style="background:var(--panel-2);border-radius:9px;border-left:4px solid ${nivelColor(n.key)}">
+    <div class="col-md-6"><div class="d-flex gap-2 align-items-start p-2" style="background:var(--panel-2);border-radius:9px;border-left:4px solid ${nivelColor(n.key)};cursor:pointer" onclick="verGuia('${n.key}')" title="Ver guía: cómo hacerlo">
       <i class="bi ${n.icon}" style="color:${nivelColor(n.key)};font-size:1.3em"></i>
-      <div><b>${n.nombre}</b><div style="font-size:.85em;color:var(--muted)">${n.desc}</div></div>
+      <div><b>${n.nombre} <i class="bi bi-journal-text" style="font-size:.8em;color:var(--accent)"></i></b><div style="font-size:.85em;color:var(--muted)">${n.desc}</div></div>
     </div></div>`).join('');
   document.getElementById('normativaList').innerHTML = CONFIG.normativa.map(x=>`<li>${x}</li>`).join('');
 }
