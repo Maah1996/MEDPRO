@@ -576,7 +576,9 @@ const GUIAS = {
     fuente:'CAIGG DT N°70/N°89 + RAA-03014 Ejército de Chile (SIPOC, mapa y flujo).',
     refDoc:{
       nombre:'RAA-03014 “Gestión de Procesos y Riesgos del Ejército” (Chile)',
-      archivo:'RAA-03014.pdf', offset:2,
+      archivo:'RAA-03014.pdf', offset:0,
+      componentes:{ ref:'Anexo 8', pag:129,
+        items:['Tablas relacionales de procesos y subprocesos','Procedimientos','Diagramas de flujo','Instructivos','Indicadores de gestión','Matriz de riesgo','Plan de tratamiento de riesgo','Monitoreo','Informes de gestión de riesgos'] },
       pasos:[
         {t:'Identificar los productos y servicios del área, a partir de su misión y tareas fundamentales.', art:'Art. 34', pag:30},
         {t:'Identificar y clasificar los procesos: esenciales, de gestión y de sostenimiento.', art:'Art. 35', pag:30},
@@ -1043,10 +1045,20 @@ function renderGuia(nivelKey){
       <ol class="guia-list">${g.estructura.map(s=>`<li>${s}</li>`).join('')}</ol>` : '';
   const consejos = (g.consejos&&g.consejos.length) ? `<h5 style="color:var(--brand-2)" class="mt-3"><i class="bi bi-lightbulb"></i> Consejos</h5>
       <ul>${g.consejos.map(c=>`<li>${c}</li>`).join('')}</ul>` : '';
-  const refDoc = g.refDoc ? `<h5 style="color:var(--brand-2)" class="mt-3"><i class="bi bi-file-earmark-pdf"></i> Paso a paso oficial — ${g.refDoc.nombre}</h5>
-      <p class="sub" style="margin-bottom:8px">Referencia doctrinaria oficial. Pincha el número de página para abrir el documento justo en esa sección.</p>
-      <ol class="guia-pasos">${g.refDoc.pasos.map(s=>`<li>${s.t} <a href="${g.refDoc.archivo}#page=${s.pag+g.refDoc.offset}" target="_blank" class="ref-pag" title="Abrir en el documento">${s.art} · pág. ${s.pag} <i class="bi bi-box-arrow-up-right"></i></a></li>`).join('')}</ol>
-      <a class="btn btn-outline-brand btn-sm" href="${g.refDoc.archivo}" target="_blank"><i class="bi bi-file-earmark-pdf"></i> Abrir documento completo (RAA-03014)</a>` : '';
+  let refDoc = '';
+  if(g.refDoc){
+    const rd = g.refDoc;
+    const comp = rd.componentes ? `<h5 style="color:var(--brand-2)" class="mt-3"><i class="bi bi-folder2-open"></i> Qué debe contener un proceso documentado
+        <a href="${rd.archivo}#page=${rd.componentes.pag+rd.offset}" target="_blank" class="ref-pag">${rd.componentes.ref} · pág. ${rd.componentes.pag} <i class="bi bi-box-arrow-up-right"></i></a></h5>
+      <p class="sub" style="margin-bottom:6px">Los documentos que integran la carpeta “Procesos y Riesgos Institucionales” (RAA-03014, Anexo 8):</p>
+      <ol class="guia-list">${rd.componentes.items.map(i=>`<li>${i}</li>`).join('')}</ol>` : '';
+    refDoc = `<h5 style="color:var(--brand-2)" class="mt-3"><i class="bi bi-file-earmark-pdf"></i> Referencia oficial — ${rd.nombre}</h5>
+      <p class="sub" style="margin-bottom:8px">Pincha el número de página para abrir el documento justo en esa sección.</p>
+      ${comp}
+      <h6 style="color:var(--brand-2);margin-top:14px">Cómo se elabora (metodología, Art. 33-42)</h6>
+      <ol class="guia-pasos">${rd.pasos.map(s=>`<li>${s.t} <a href="${rd.archivo}#page=${s.pag+rd.offset}" target="_blank" class="ref-pag" title="Abrir en el documento">${s.art} · pág. ${s.pag} <i class="bi bi-box-arrow-up-right"></i></a></li>`).join('')}</ol>
+      <a class="btn btn-outline-brand btn-sm" href="${rd.archivo}" target="_blank"><i class="bi bi-file-earmark-pdf"></i> Abrir documento completo (RAA-03014)</a>`;
+  }
   const plantillaBtn = g.plantilla ? `<button class="btn btn-brand" onclick="descargarPlantilla('${nivelKey}')"><i class="bi bi-file-earmark-word"></i> Descargar plantilla en Word</button>` : '';
   document.getElementById('guiaContent').innerHTML = `
     <div class="result-hero" style="background:linear-gradient(135deg,${col},${col}cc);padding:22px">
